@@ -269,6 +269,7 @@ Regras gerais:
 - evitar arquivos vazios;
 - evitar duplicação;
 - manter compatibilidade com o package hospedeiro.
+- Adicionar breve comentário em português de docblock para cada método, propriedade pública e estrutura lógica complexa - em métodos comuns do Laravel não é necessario, como em Models, Migrations, funções padroes (casts por exemplo) etc.
 
 Não renomeie APIs públicas sem necessidade.
 
