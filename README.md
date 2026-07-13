@@ -38,7 +38,7 @@ php artisan migrate
 - PHP 8.2 ou superior;
 - Laravel 12;
 
-## Configuration
+## Configuração
 
 A biblioteca pode ser configurada editando o arquivo `config/api-key.php`, publicado durante a instalação.
 
