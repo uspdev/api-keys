@@ -4,6 +4,7 @@ namespace Uspdev\ApiKey\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use InvalidArgumentException;
 use Uspdev\ApiKey\Contracts\ApiKeyManager;
 
 /** Representa uma credencial com hash vinculada polimorficamente ao proprietário. */
@@ -96,5 +97,73 @@ class ApiKey extends Model
     public static function authenticate(string $token): ?self
     {
         return app(ApiKeyManager::class)->authenticate($token);
+    }
+
+    /** Retorna os dados necessários para renderizar o gerenciador Blade incorporável. */
+    public static function managerData(Model $owner, ?string $ownerAlias = null): array
+    {
+        if (! method_exists($owner, 'apiKeys')) {
+            throw new InvalidArgumentException(
+                'The API key manager owner must use the HasApiKeys trait.'
+            );
+        }
+
+        $ownerAlias = self::resolveManagerOwnerAlias($owner, $ownerAlias);
+        $ownerRouteKey = (string) $owner->getRouteKey();
+
+        return [
+            'apiKeys' => $owner->apiKeys()->latest('created_at')->get(),
+            'ownerAlias' => $ownerAlias,
+            'ownerRouteKey' => $ownerRouteKey,
+            'purposes' => (array) config('api-key.interface.purposes', []),
+            'roles' => (array) config('api-key.interface.roles', []),
+            'componentId' => 'api-key-manager-' . substr(
+                sha1($ownerAlias . '|' . $ownerRouteKey . '|' . spl_object_id($owner)),
+                0,
+                12,
+            ),
+            'storeUrl' => route('api-key.keys.store', [
+                'ownerAlias' => $ownerAlias,
+                'owner' => $ownerRouteKey,
+            ]),
+        ];
+    }
+
+    /** Monta a URL de revogação de uma chave vinculada ao owner informado. */
+    public function managerRevokeUrl(Model $owner, ?string $ownerAlias = null): string
+    {
+        $ownerAlias = self::resolveManagerOwnerAlias($owner, $ownerAlias);
+
+        return route('api-key.keys.revoke', [
+            'ownerAlias' => $ownerAlias,
+            'owner' => (string) $owner->getRouteKey(),
+            'apiKey' => $this->getRouteKey(),
+        ]);
+    }
+
+    /** Resolve e valida o alias configurado para a classe do owner. */
+    private static function resolveManagerOwnerAlias(Model $owner, ?string $ownerAlias): string
+    {
+        $owners = (array) config('api-key.owners', []);
+
+        if ($ownerAlias !== null) {
+            if (($owners[$ownerAlias] ?? null) !== $owner::class) {
+                throw new InvalidArgumentException(
+                    sprintf('Owner alias [%s] is not registered for [%s].', $ownerAlias, $owner::class)
+                );
+            }
+
+            return $ownerAlias;
+        }
+
+        $resolvedAlias = array_search($owner::class, $owners, true);
+
+        if ($resolvedAlias === false) {
+            throw new InvalidArgumentException(
+                sprintf('Owner class [%s] must be registered in the api-key.owners configuration.', $owner::class)
+            );
+        }
+
+        return (string) $resolvedAlias;
     }
 }

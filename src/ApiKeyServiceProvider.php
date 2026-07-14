@@ -28,6 +28,9 @@ class ApiKeyServiceProvider extends ServiceProvider
         $alias = (string) config('api-key.middleware.alias', 'uspdevApiKey');
         $router->aliasMiddleware($alias, AuthenticateApiKey::class);
 
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'api-keys');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
         $this->publishes([
             __DIR__ . '/../config/api-key.php' => config_path('api-key.php'),
         ], 'api-key-config');
@@ -35,5 +38,9 @@ class ApiKeyServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../database/migrations' => database_path('migrations'),
         ], 'api-key-migrations');
+
+        $this->publishes([
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/api-keys'),
+        ], 'api-key-views');
     }
 }

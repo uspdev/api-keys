@@ -35,12 +35,34 @@ php artisan migrate
 
 ## Requirements
 
-- PHP 8.2 ou superior;
+- PHP 8.3 ou superior;
 - Laravel 12;
 
 ## Configuração
 
 A biblioteca pode ser configurada editando o arquivo `config/api-key.php`, publicado durante a instalação.
+
+### Componente Blade
+
+Registre os owners permitidos usando aliases estáveis na configuração:
+
+```php
+'owners' => [
+    'project' => App\Models\Project::class,
+],
+```
+
+O model deve utilizar `HasApiKeys`. Depois, incorpore o gerenciador na página desejada:
+
+```blade
+<x-api-keys::manager :owner="$project" />
+```
+
+O package fornece a tabela, criação, exibição única do token e revogação. As rotas dessas ações usam o prefixo configurado em `api-key.prefix` e os middlewares configurados em `api-key.management`, seguindo o padrão dos packages USPdev.
+
+As rotas administrativas usam `web` e `auth` por padrão e exigem a ability
+`manageApiKeys` no usuário logado para o owner. A aplicação pode ajustar o
+middleware e o nome da ability em `api-key.management`.
 
 ## Contribuições
 

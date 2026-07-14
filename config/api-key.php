@@ -6,9 +6,20 @@ return [
     // ela é mantida para compatibilidade com integrações visuais futuras.
     'bootstrapVersion' => 4,
 
+    // Mapeia aliases estáveis para os models que podem possuir API Keys.
+    // A aplicação hospedeira deve publicar os aliases que utilizará.
+    'owners' => [],
+
+    // Prefixo das rotas administrativas fornecidas pelo package.
+    'prefix' => 'api-keys',
+
     // Prefixo público que identifica o tipo da credencial. O valor "gpp" vem
     // dos exemplos de API key descritos em docs/api-key.md.
     'credential_prefix' => env('API_KEY_CREDENTIAL_PREFIX', 'gpp'),
+
+    // Versão do formato público da credencial. A versão fica entre o prefixo
+    // do package e o identificador público para permitir evolução futura.
+    'credential_version' => env('API_KEY_CREDENTIAL_VERSION', 'v1'),
 
     // Quantidade de caracteres do identificador público armazenado na coluna
     // "prefix". A documentação mostra um prefixo público de seis caracteres,
@@ -38,4 +49,27 @@ return [
         // Nome do parâmetro previsto na documentação: ?api_key=...
         'name' => env('API_KEY_QUERY_PARAMETER_NAME', 'api_key'),
     ],
+
+    // Protege as rotas da interface e delega a autorização do owner à aplicação.
+    'management' => [
+        'middleware' => ['web', 'auth'],
+        'ability' => 'manageApiKeys',
+    ],
+
+    // Define os valores apresentados nos campos do componente Blade.
+    // A aplicação hospedeira pode adicionar ou alterar os valores conforme sua estrutura
+    // de papéis e propósitos. O núcleo do package não depende destes valores.
+    'interface' => [
+        'purposes' => [
+            'integration' => 'Integração',
+            'ai' => 'IA',
+        ],
+
+        'roles' => [
+            'viewer' => 'Visualizador',
+            'collaborator' => 'Colaborador',
+            'administrator' => 'Administrador',
+        ],
+    ],
+
 ];
