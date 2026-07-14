@@ -2,16 +2,14 @@
 
 namespace Uspdev\ApiKey\Http\Controllers;
 
-use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Contracts\Encryption\Encrypter;
-use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Uspdev\ApiKey\Contracts\ApiKeyManager;
+use Uspdev\ApiKey\Http\Requests\StoreApiKeyRequest;
 use Uspdev\ApiKey\Models\ApiKey;
 
 /** Processa as ações administrativas usadas pelo componente Blade de API Keys. */
@@ -21,42 +19,16 @@ class ApiKeyController
     public function __construct(
         private readonly ApiKeyManager $apiKeys,
         private readonly Encrypter $encrypter,
-        private readonly ValidationFactory $validator,
     ) {
     }
 
     /** Cria uma chave e disponibiliza seu token criptografado em flash session. */
-    public function store(Request $request, string $ownerAlias, string $owner): RedirectResponse
+    public function store(StoreApiKeyRequest $request, string $ownerAlias, string $owner): RedirectResponse
     {
         $ownerModel = $this->resolveOwner($ownerAlias, $owner);
         $this->authorizeManagement($request, $ownerModel);
-        $purposes = array_keys((array) config('api-key.interface.purposes', []));
-        $roles = array_keys((array) config('api-key.interface.roles', []));
 
-        $data = $this->validator->make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
-            'purpose' => ['required', Rule::in($purposes)],
-            'role' => ['required', Rule::in($roles)],
-            'expires_at' => [
-                'nullable',
-                'date_format:Y-m-d',
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    if ($value === null || $value === '') {
-                        return;
-                    }
-
-                    $expiration = DateTimeImmutable::createFromFormat('!Y-m-d', (string) $value);
-                    $errors = DateTimeImmutable::getLastErrors();
-
-                    if (
-                        $expiration === false
-                        || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))
-                    ) {
-                        $fail('A data de expiração deve ser uma data válida.');
-                    }
-                },
-            ],
-        ])->validate();
+        $data = $request->validated();
 
         $expiresAt = $this->parseExpiration($data['expires_at'] ?? null);
         $createdBy = $this->resolveCreatorId($request);
