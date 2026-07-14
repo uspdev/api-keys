@@ -42,6 +42,8 @@ php artisan migrate
 
 A biblioteca pode ser configurada editando o arquivo `config/api-key.php`, publicado durante a instalação.
 
+Consulte o [guia de uso das páginas e componentes Blade](docs/api-key-usage.md) para exemplos completos de configuração, incorporação e autorização.
+
 ### Componente Blade
 
 Registre os owners permitidos usando aliases estáveis na configuração:
@@ -63,6 +65,64 @@ O package fornece a tabela, criação, exibição única do token e revogação.
 As rotas administrativas usam `web` e `auth` por padrão e exigem a ability
 `manageApiKeys` no usuário logado para o owner. A aplicação pode ajustar o
 middleware e o nome da ability em `api-key.management`.
+
+### Página administrativa opcional
+
+O package também fornece uma página completa que reutiliza o mesmo componente
+Blade do gerenciador:
+
+~~~text
+/api-keys
+/api-keys/project
+/api-keys/project/15
+~~~
+
+O primeiro endereço lista os aliases configurados em `api-key.owners`; o
+segundo lista os owners autorizados para o alias; e o terceiro exibe a tela de
+gerenciamento do owner. A página usa `layouts.app` por padrão, compatível com o
+layout visual fornecido pelo `laravel-usp-theme`, e pode ser ajustada ou
+desabilitada:
+
+~~~php
+'management' => [
+    'page' => [
+        'enabled' => true,
+        'layout' => 'layouts.app',
+    ],
+],
+~~~
+
+O layout deve ser fornecido pela aplicação hospedeira. A autorização continua
+sendo feita pela ability configurada em `api-key.management.ability` para cada
+owner.
+
+### Integração com o laravel-usp-theme
+
+Para adicionar automaticamente a página ao menu principal configurado em
+`config/usp-theme.php`, habilite a integração no `config/api-key.php` publicado:
+
+~~~php
+'theme' => [
+    'menu' => [
+        'enabled' => true,
+        'item' => [
+            'text' => '<i class="fas fa-key"></i> API Keys',
+            'url' => 'api-keys',
+            'can' => 'admin',
+        ],
+    ],
+],
+~~~
+
+Quando `url` não for informado, o package utiliza o valor de
+`api-key.prefix`. O item é acrescentado ao menu existente em
+`usp-theme.menu`; os demais itens não são alterados. A integração é
+desabilitada por padrão e só funciona quando o theme disponibiliza essa
+configuração.
+
+O campo `can` é opcional e deve usar uma ability global da aplicação, como
+`admin`. A ability `manageApiKeys` normalmente depende de um owner específico
+e, por isso, não deve ser usada diretamente no item global da navbar.
 
 ## Contribuições
 
