@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use RuntimeException;
 use Uspdev\ApiKey\Contracts\ApiKeyManager;
-use Uspdev\ApiKey\Data\CreatedApiKey;
+use Uspdev\ApiKey\Dto\CreatedApiKeyDto;
 use Uspdev\ApiKey\Models\ApiKey;
 
 /** Cria, autentica e revoga credenciais de API Key. */
@@ -30,10 +30,14 @@ class ApiKeyService implements ApiKeyManager
         string $role,
         ?DateTimeInterface $expiresAt = null,
         ?int $createdBy = null,
-    ): CreatedApiKey {
+    ): CreatedApiKeyDto {
         $credentialPrefix = (string) $this->config->get(
             'api-key.credential_prefix',
             'gpp'
+        );
+        $credentialVersion = (string) $this->config->get(
+            'api-key.credential_version',
+            'v1'
         );
 
         /** Repete a alocação caso ocorra uma colisão de prefixo após a consulta. */
@@ -65,9 +69,9 @@ class ApiKeyService implements ApiKeyManager
                 continue;
             }
 
-            return new CreatedApiKey(
+            return new CreatedApiKeyDto(
                 $apiKey,
-                sprintf('%s_%s.%s', $credentialPrefix, $publicPrefix, $secret),
+                sprintf('%s_%s_%s.%s', $credentialPrefix, $credentialVersion, $publicPrefix, $secret),
             );
         }
 
@@ -133,7 +137,11 @@ class ApiKeyService implements ApiKeyManager
             'api-key.credential_prefix',
             'gpp'
         );
-        $start = $credentialPrefix . '_';
+        $credentialVersion = (string) $this->config->get(
+            'api-key.credential_version',
+            'v1'
+        );
+        $start = $credentialPrefix . '_' . $credentialVersion . '_';
 
         if (! str_starts_with($token, $start)) {
             return null;

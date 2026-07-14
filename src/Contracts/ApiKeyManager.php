@@ -4,7 +4,7 @@ namespace Uspdev\ApiKey\Contracts;
 
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
-use Uspdev\ApiKey\Data\CreatedApiKey;
+use Uspdev\ApiKey\Dto\CreatedApiKeyDto;
 use Uspdev\ApiKey\Models\ApiKey;
 
 /** Define as operações de ciclo de vida de chaves expostas pelo pacote. */
@@ -18,7 +18,7 @@ interface ApiKeyManager
         string $role,
         ?DateTimeInterface $expiresAt = null,
         ?int $createdBy = null,
-    ): CreatedApiKey;
+    ): CreatedApiKeyDto;
 
     /** Autentica um token e registra os metadados quando seu uso é válido. */
     public function authenticate(string $token, ?string $ipAddress = null): ?ApiKey;
