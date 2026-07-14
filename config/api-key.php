@@ -1,75 +1,102 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Blocos de configuração
+|--------------------------------------------------------------------------
+| Os blocos maiores ficam definidos antes do array principal para facilitar
+| a localização e a edição das opções mais usadas pela aplicação.
+*/
+
+$middleware = [
+    'web',
+    'auth',
+];
+
+$managementPage = [
+    // A página completa pode ser desabilitada quando a aplicação usa somente
+    // o componente Blade <x-api-keys::manager />.
+    'enabled' => (bool) env('API_KEY_MANAGEMENT_PAGE_ENABLED', true),
+
+    // Layout fornecido pela aplicação hospedeira.
+    'layout' => env('API_KEY_MANAGEMENT_LAYOUT', 'layouts.app'),
+];
+
+$themeMenuItem = [
+    'text' => '<i class="fas fa-key"></i> API Keys',
+
+    // Quando nulo, o provider utiliza o valor configurado em "prefix".
+    'url' => null,
+];
+
+$purposes = [
+    'integration' => 'Integração',
+    'ai' => 'IA',
+];
+
+$roles = [
+    'viewer' => 'Visualizador',
+    'collaborator' => 'Colaborador',
+    'administrator' => 'Administrador',
+];
+
 return [
-    // Versão do Bootstrap esperada pela aplicação hospedeira caso ela forneça
-    // uma interface administrativa. O núcleo atual não depende desta opção;
-    // ela é mantida para compatibilidade com integrações visuais futuras.
+    // Versão do Bootstrap esperada pela aplicação hospedeira, caso ela
+    // forneça uma interface administrativa. Mantida para compatibilidade.
     'bootstrapVersion' => 4,
 
-    // Mapeia aliases estáveis para os models que podem possuir API Keys.
-    // A aplicação hospedeira deve publicar os aliases que utilizará.
+    // Aliases estáveis e classes dos models que podem possuir API Keys.
+    // Exemplo: 'project' => App\\Models\\Project::class,
     'owners' => [],
 
     // Prefixo das rotas administrativas fornecidas pelo package.
     'prefix' => 'api-keys',
 
-    // Prefixo público que identifica o tipo da credencial. O valor "gpp" vem
-    // dos exemplos de API key descritos em docs/api-key.md.
+    // Formato público da credencial.
+    // Exemplo: gpp_v1_4Y7KQ2.segredo
     'credential_prefix' => env('API_KEY_CREDENTIAL_PREFIX', 'gpp'),
-
-    // Versão do formato público da credencial. A versão fica entre o prefixo
-    // do package e o identificador público para permitir evolução futura.
     'credential_version' => env('API_KEY_CREDENTIAL_VERSION', 'v1'),
 
-    // Quantidade de caracteres do identificador público armazenado na coluna
-    // "prefix". A documentação mostra um prefixo público de seis caracteres,
-    // que também possui índice único para localizar a chave.
+    // Tamanho do identificador público e do segredo da credencial.
     'public_prefix_length' => (int) env('API_KEY_PUBLIC_PREFIX_LENGTH', 6),
-
-    // Quantidade de bytes aleatórios usados para gerar o segredo. A
-    // documentação exige uma chave criptograficamente segura e determina que
-    // apenas seu hash seja persistido; 32 bytes é o padrão inicial adotado.
     'secret_bytes' => (int) env('API_KEY_SECRET_BYTES', 32),
 
+    // Autenticação das rotas de negócio protegidas por API Key.
     'middleware' => [
-        // Alias do middleware citado na documentação: Route::middleware('uspdevApiKey').
+        // Alias usado pela aplicação: Route::middleware('uspdevApiKey').
         'alias' => env('API_KEY_MIDDLEWARE_ALIAS', 'uspdevApiKey'),
 
-        // Atributo da requisição onde o middleware disponibiliza a API key
-        // autenticada, conforme request()->attributes->set('apiKey', ...).
+        // Atributo onde o middleware disponibiliza a chave autenticada.
         'request_attribute' => env('API_KEY_REQUEST_ATTRIBUTE', 'apiKey'),
     ],
 
+    // Permite API Key na query string somente quando explicitamente habilitado.
+    // O uso do header Authorization: Bearer é o padrão recomendado.
     'query_parameter' => [
-        // A documentação permite query string apenas excepcionalmente. O
-        // padrão seguro é exigir o header Authorization: Bearer e deixar esta
-        // alternativa desativada para evitar exposição da chave em URLs.
         'enabled' => (bool) env('API_KEY_QUERY_PARAMETER_ENABLED', false),
-
-        // Nome do parâmetro previsto na documentação: ?api_key=...
         'name' => env('API_KEY_QUERY_PARAMETER_NAME', 'api_key'),
     ],
 
-    // Protege as rotas da interface e delega a autorização do owner à aplicação.
+    // Rotas e autorização da interface administrativa do package.
     'management' => [
-        'middleware' => ['web', 'auth'],
+        'middleware' => $middleware,
         'ability' => 'manageApiKeys',
+        'page' => $managementPage,
     ],
 
-    // Define os valores apresentados nos campos do componente Blade.
-    // A aplicação hospedeira pode adicionar ou alterar os valores conforme sua estrutura
-    // de papéis e propósitos. O núcleo do package não depende destes valores.
+    // Integração opcional com o menu principal do laravel-usp-theme.
+    'theme' => [
+        'menu' => [
+            'enabled' => (bool) env('API_KEY_USP_THEME_MENU_ENABLED', false),
+            'item' => $themeMenuItem,
+        ],
+    ],
+
+    // Valores exibidos nos campos de propósito e papel da interface Blade.
+    // A aplicação hospedeira pode adicionar ou alterar os valores conforme
+    // sua estrutura, sem que o núcleo do package dependa deles.
     'interface' => [
-        'purposes' => [
-            'integration' => 'Integração',
-            'ai' => 'IA',
-        ],
-
-        'roles' => [
-            'viewer' => 'Visualizador',
-            'collaborator' => 'Colaborador',
-            'administrator' => 'Administrador',
-        ],
+        'purposes' => $purposes,
+        'roles' => $roles,
     ],
-
 ];

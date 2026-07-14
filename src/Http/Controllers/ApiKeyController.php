@@ -32,7 +32,7 @@ class ApiKeyController
             'owners' => collect(),
         ]);
     }
-
+J
     /** Lista os owners de um alias que o usuário atual pode administrar. */
     public function owners(Request $request, string $ownerAlias): View
     {
