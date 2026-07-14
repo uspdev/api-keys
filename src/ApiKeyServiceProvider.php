@@ -30,6 +30,7 @@ class ApiKeyServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'api-keys');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->registerUspThemeMenu();
 
         $this->publishes([
             __DIR__ . '/../config/api-key.php' => config_path('api-key.php'),
@@ -42,5 +43,44 @@ class ApiKeyServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/api-keys'),
         ], 'api-key-views');
+    }
+
+    /** Acrescenta a página ao menu do USP Theme sem substituir itens da aplicação. */
+    private function registerUspThemeMenu(): void
+    {
+        if (
+            ! (bool) config('api-key.theme.menu.enabled', false)
+            || ! (bool) config('api-key.management.page.enabled', true)
+            || ! config()->has('usp-theme.menu')
+        ) {
+            return;
+        }
+
+        $menu = config('usp-theme.menu');
+
+        if (! is_array($menu)) {
+            return;
+        }
+
+        $item = (array) config('api-key.theme.menu.item', []);
+        $url = $item['url'] ?? null;
+
+        if (! is_string($url) || $url === '') {
+            $url = trim((string) config('api-key.prefix', 'api-keys'), '/');
+        }
+
+        if (! isset($item['text']) || ! is_string($item['text']) || $item['text'] === '') {
+            $item['text'] = 'API Keys';
+        }
+
+        $item['url'] = $url;
+
+        foreach ($menu as $menuItem) {
+            if (is_array($menuItem) && ($menuItem['url'] ?? null) === $url) {
+                return;
+            }
+        }
+
+        config(['usp-theme.menu' => [...$menu, $item]]);
     }
 }

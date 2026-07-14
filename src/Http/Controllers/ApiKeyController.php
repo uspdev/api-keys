@@ -5,6 +5,7 @@ namespace Uspdev\ApiKey\Http\Controllers;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,45 @@ class ApiKeyController
         private readonly ApiKeyManager $apiKeys,
         private readonly Encrypter $encrypter,
     ) {
+    }
+
+    /** Exibe os tipos de owner registrados para a página administrativa. */
+    public function index(): View
+    {
+        return view('api-keys::admin.index', [
+            'ownerAlias' => null,
+            'ownerTypes' => $this->registeredOwnerTypes(),
+            'owners' => collect(),
+        ]);
+    }
+
+    /** Lista os owners de um alias que o usuário atual pode administrar. */
+    public function owners(Request $request, string $ownerAlias): View
+    {
+        $ownerClass = $this->resolveOwnerClass($ownerAlias);
+        $owners = $ownerClass::query()
+            ->get()
+            ->filter(fn (Model $owner): bool => $this->canManage($request, $owner))
+            ->map(fn (Model $owner): array => $this->ownerEntry($owner))
+            ->values();
+
+        return view('api-keys::admin.index', [
+            'ownerAlias' => $ownerAlias,
+            'ownerTypes' => $this->registeredOwnerTypes(),
+            'owners' => $owners,
+        ]);
+    }
+
+    /** Renderiza a página completa e reutiliza o mesmo gerenciador Blade incorporável. */
+    public function show(Request $request, string $ownerAlias, string $owner): View
+    {
+        $ownerModel = $this->resolveOwner($ownerAlias, $owner);
+        $this->authorizeManagement($request, $ownerModel);
+
+        return view('api-keys::admin.show', [
+            'owner' => $ownerModel,
+            'ownerAlias' => $ownerAlias,
+        ]);
     }
 
     /** Cria uma chave e disponibiliza seu token criptografado em flash session. */
@@ -67,21 +107,41 @@ class ApiKeyController
     /** Garante que o usuário logado pode administrar chaves deste owner. */
     private function authorizeManagement(Request $request, Model $owner): void
     {
+        if (! $this->canManage($request, $owner)) {
+            abort(403);
+        }
+    }
+
+    /** Verifica a ability configurada sem expor owners não autorizados na listagem. */
+    private function canManage(Request $request, Model $owner): bool
+    {
         $user = $request->user();
+        $ability = (string) config('api-key.management.ability', 'manageApiKeys');
 
         if ($user === null) {
             abort(401);
         }
 
-        $ability = (string) config('api-key.management.ability', 'manageApiKeys');
-
-        if ($ability === '' || ! method_exists($user, 'can') || ! $user->can($ability, $owner)) {
-            abort(403);
-        }
+        return $ability !== '' && method_exists($user, 'can') && $user->can($ability, $owner);
     }
 
     /** Resolve o model a partir de um alias previamente registrado pela aplicação. */
     private function resolveOwner(string $ownerAlias, string $owner): Model
+    {
+        $ownerClass = $this->resolveOwnerClass($ownerAlias);
+        $ownerPrototype = new $ownerClass();
+
+        $ownerModel = $ownerPrototype->resolveRouteBinding($owner);
+
+        if (! $ownerModel instanceof Model) {
+            abort(404);
+        }
+
+        return $ownerModel;
+    }
+
+    /** Resolve um alias seguro e exige que o model seja compatível com HasApiKeys. */
+    private function resolveOwnerClass(string $ownerAlias): string
     {
         $owners = (array) config('api-key.owners', []);
         $ownerClass = $owners[$ownerAlias] ?? null;
@@ -96,13 +156,54 @@ class ApiKeyController
             abort(404);
         }
 
-        $ownerModel = $ownerPrototype->resolveRouteBinding($owner);
+        return $ownerClass;
+    }
 
-        if (! $ownerModel instanceof Model) {
-            abort(404);
+    /** Retorna somente aliases válidos para a tela inicial da administração. */
+    private function registeredOwnerTypes(): array
+    {
+        $types = [];
+
+        foreach ((array) config('api-key.owners', []) as $alias => $ownerClass) {
+            if (! is_string($alias) || ! is_string($ownerClass) || ! is_a($ownerClass, Model::class, true)) {
+                continue;
+            }
+
+            $ownerPrototype = new $ownerClass();
+
+            if (! method_exists($ownerPrototype, 'apiKeys')) {
+                continue;
+            }
+
+            $types[] = [
+                'alias' => $alias,
+                'class' => $ownerClass,
+                'label' => $this->ownerAliasLabel($alias),
+            ];
         }
 
-        return $ownerModel;
+        return $types;
+    }
+
+    /** Prepara uma linha de owner sem assumir um atributo de negócio obrigatório. */
+    private function ownerEntry(Model $owner): array
+    {
+        $label = $owner->getAttribute('name') ?? $owner->getAttribute('title');
+
+        if (! is_scalar($label) || (string) $label === '') {
+            $label = '#' . (string) $owner->getRouteKey();
+        }
+
+        return [
+            'model' => $owner,
+            'label' => (string) $label,
+        ];
+    }
+
+    /** Converte aliases técnicos em títulos legíveis sem depender do model owner. */
+    private function ownerAliasLabel(string $alias): string
+    {
+        return ucwords(str_replace(['-', '_'], ' ', $alias));
     }
 
     /** Confere o tipo polimórfico e o identificador antes de uma ação destrutiva. */
