@@ -42,7 +42,7 @@ php artisan migrate
 
 A biblioteca pode ser configurada editando o arquivo `config/api-keys.php`, publicado durante a instalação.
 
-Consulte o [guia de uso das páginas e componentes Blade](docs/api-key-usage.md) para exemplos completos de configuração, incorporação e autorização.
+Consulte o [índice da documentação de uso](docs/uso/index.md) para exemplos de configuração, traits, rotas e views.
 
 ### Componente Blade
 

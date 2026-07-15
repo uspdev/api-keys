@@ -41,10 +41,6 @@ $roles = [
 ];
 
 return [
-    // Versão do Bootstrap esperada pela aplicação hospedeira, caso ela
-    // forneça uma interface administrativa. Mantida para compatibilidade.
-    'bootstrapVersion' => 4,
-
     // Aliases estáveis e classes dos models que podem possuir API Keys.
     // Exemplo: 'project' => App\\Models\\Project::class,
     'owners' => [],

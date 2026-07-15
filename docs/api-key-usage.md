@@ -3,6 +3,9 @@
 Este guia explica como configurar os owners, incorporar o gerenciador de API
 Keys em uma página da aplicação e utilizar a página administrativa opcional.
 
+> A documentação de uso foi reorganizada em [docs/uso/index.md](uso/index.md).
+> Este arquivo permanece como referência detalhada das páginas e componentes.
+
 
 ## Componente principal
 
