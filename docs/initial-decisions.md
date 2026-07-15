@@ -349,6 +349,20 @@ if ($apiKey->purpose === 'ai') {
 
 A geração de contexto para IA, serialização dos dados e otimização de tokens continuarão pertencendo à aplicação.
 
+## Valores de `role` e `purpose`
+
+`role` e `purpose` são valores extensíveis definidos pela aplicação
+hospedeira. No núcleo do pacote, ambos são persistidos como strings e o
+serviço não impõe uma lista fixa de valores.
+
+A interface administrativa utiliza `api-key.interface.purposes` e
+`api-key.interface.roles` para definir os valores apresentados e validados.
+A aplicação pode substituir essas listas pelos seus próprios enums, roles e
+permissions, incluindo os valores fornecidos pela Senha Única. O pacote
+apenas armazena e disponibiliza esses valores; a aplicação hospedeira define
+seu significado e como aplicá-los na autorização e no comportamento associado
+ao `purpose`.
+
 ---
 
 ## Cache
@@ -428,7 +442,6 @@ Ainda precisam ser fechados durante o desenvolvimento:
 
 - nome definitivo em singular ou plural: `ApiKey` ou `ApiKeys` -> singular
 - formato exato e tamanho de cada trecho da chave;
-- se `purpose` e `role` serão totalmente extensíveis;
 - se o middleware aceitará abilities, como:
 
 ```php
@@ -436,11 +449,9 @@ Route::middleware('uspdev.api-key:tasks.create');
 ```
 
 - se `owner_id` aceitará apenas bigint ou também UUID/ULID;
-- como será armazenado `created_by`;
 - significado exato da ação “renovar”;
 - se registros revogados poderão ser excluídos;
 - se haverá soft delete;
 - se será armazenado motivo e responsável pela revogação;
 - se a auditoria será somente agregada ou terá histórico por requisição;
 - se autenticação por query string será suportada.
-

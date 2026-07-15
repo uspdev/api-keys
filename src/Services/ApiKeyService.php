@@ -7,6 +7,7 @@ use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
+use InvalidArgumentException;
 use RuntimeException;
 use Uspdev\ApiKey\Contracts\ApiKeyManager;
 use Uspdev\ApiKey\Dto\CreatedApiKeyDto;
@@ -31,6 +32,10 @@ class ApiKeyService implements ApiKeyManager
         ?DateTimeInterface $expiresAt = null,
         ?int $createdBy = null,
     ): CreatedApiKeyDto {
+        if ($expiresAt !== null && $expiresAt->getTimestamp() <= now()->getTimestamp()) {
+            throw new InvalidArgumentException('The expiration date must be in the future.');
+        }
+
         $credentialPrefix = (string) $this->config->get(
             'api-key.credential_prefix',
             'gpp'

@@ -42,6 +42,12 @@ class StoreApiKeyRequest extends FormRequest
                         || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))
                     ) {
                         $fail('A data de expiração deve ser uma data válida.');
+
+                        return;
+                    }
+
+                    if ($expiration->format('Y-m-d') < today()->toDateString()) {
+                        $fail('A data de expiração não pode ser anterior à data atual.');
                     }
                 },
             ],
