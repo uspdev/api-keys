@@ -7,13 +7,14 @@ use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
 use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 use Uspdev\ApiKeys\Dto\CreatedApiKeyDto;
 use Uspdev\ApiKeys\Models\ApiKey;
 
-/** Cria, autentica e revoga credenciais de API Key. */
+/** Cria, autentica, renova e revoga credenciais de API Key. */
 class ApiKeyService implements ApiKeyManager
 {
     /** Recebe os serviços de hash e configuração usados pelo gerenciador. */
@@ -111,12 +112,48 @@ class ApiKeyService implements ApiKeyManager
         return $apiKey;
     }
 
-    /** Marca uma credencial como revogada sem alterar a data já registrada. */
-    public function revoke(ApiKey $apiKey): void
+    /** Marca uma credencial como revogada e registra o responsável pela operação. */
+    public function revoke(ApiKey $apiKey, ?int $revokedBy = null): void
     {
         if (! $apiKey->isRevoked()) {
-            $apiKey->forceFill(['revoked_at' => now()])->save();
+            $apiKey->forceFill([
+                'revoked_at' => now(),
+                'revoked_by' => $revokedBy,
+            ])->save();
         }
+    }
+
+    /** Cria uma nova credencial com os mesmos metadados e revoga a anterior. */
+    public function renew(ApiKey $apiKey, ?int $createdBy = null): CreatedApiKeyDto
+    {
+        return DB::transaction(function () use ($apiKey, $createdBy): CreatedApiKeyDto {
+            $currentApiKey = ApiKey::query()
+                ->lockForUpdate()
+                ->findOrFail($apiKey->getKey());
+
+            if (! $currentApiKey->isActive()) {
+                throw new InvalidArgumentException('Only active API keys can be renewed.');
+            }
+
+            $owner = $currentApiKey->owner;
+
+            if (! $owner instanceof Model) {
+                throw new InvalidArgumentException('The API key owner could not be resolved.');
+            }
+
+            $created = $this->create(
+                $owner,
+                (string) $currentApiKey->name,
+                (string) $currentApiKey->purpose,
+                (string) $currentApiKey->role,
+                $currentApiKey->expires_at,
+                $createdBy,
+            );
+
+            $this->revoke($currentApiKey, $createdBy);
+
+            return $created;
+        });
     }
 
     /** Gera o identificador público e indexado usado para localizar a credencial. */

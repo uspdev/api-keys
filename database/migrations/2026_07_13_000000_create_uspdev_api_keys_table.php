@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('last_used_ip', 45)->nullable();
             $table->timestamp('expires_at')->nullable()->index();
             $table->timestamp('revoked_at')->nullable()->index();
+            $table->unsignedBigInteger('revoked_by')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });
@@ -31,4 +32,3 @@ return new class extends Migration
         Schema::dropIfExists('uspdev_api_keys');
     }
 };
-

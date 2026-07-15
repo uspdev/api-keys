@@ -31,4 +31,10 @@ Route::group([
         ->where('owner', '[^/]+')
         ->whereNumber('apiKey')
         ->name('api-keys.keys.revoke');
+
+    Route::post('{ownerAlias}/{owner}/keys/{apiKey}/renew', [ApiKeyController::class, 'renew'])
+        ->where('ownerAlias', '[A-Za-z0-9_-]+')
+        ->where('owner', '[^/]+')
+        ->whereNumber('apiKey')
+        ->name('api-keys.keys.renew');
 });

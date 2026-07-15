@@ -32,20 +32,26 @@ O `manager` reúne os seguintes recursos:
 - modal de criação;
 - validação de expiração;
 - modal para exibir o token completo uma única vez;
-- ação de revogação.
+- ação de revogação;
+- ação de renovação para chaves ativas.
 
 ## Componentes internos
 
 | View | Responsabilidade |
 | --- | --- |
 | `api-keys::components/manager` | Coordena a interface e os modais. |
-| `api-keys::components/key-table` | Lista chaves, status, metadados e revogação. |
+| `api-keys::components/key-table` | Lista chaves, status, metadados, renovação e revogação. |
 | `api-keys::components/create-modal` | Formulário de criação. |
 | `api-keys::components/secret-modal` | Exibe o token temporário após a criação. |
 | `api-keys::components/status-badge` | Renderiza ativa, expirada ou revogada. |
 
 O token completo é criptografado na flash session e removido após o consumo.
 Depois que a modal é fechada, ele não pode ser recuperado.
+
+A renovação cria um novo token com os metadados da chave ativa, revoga a chave
+anterior e exibe o novo token pela mesma modal de uso único. Chaves revogadas
+e expiradas permanecem na tabela para consulta; o package não oferece exclusão
+nem soft delete.
 
 ## Publicação e customização
 

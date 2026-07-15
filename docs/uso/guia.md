@@ -89,6 +89,21 @@ fica disponível em:
 A página usa o layout configurado em `api-keys.management.page.layout`. A
 aplicação hospedeira deve fornecer esse layout.
 
+## Ciclo de vida administrativo
+
+Renovar uma API Key significa criar uma nova credencial e revogar a anterior
+em uma única operação. A nova chave mantém o nome, o `purpose`, o `role` e a
+data de expiração da chave anterior; o token completo é exibido uma única vez,
+como na criação normal.
+
+A renovação só está disponível para chaves ativas. Para uma chave expirada,
+crie uma nova chave com a validade desejada. A chave anterior permanece na
+listagem com o status correspondente e nunca é excluída nem recebe soft delete.
+
+`revoked_by` armazena o identificador numérico do usuário responsável pela
+revogação. A renovação grava o mesmo identificador como `created_by` da nova
+chave e `revoked_by` da chave anterior. Nenhum motivo de revogação é persistido.
+
 ## Rotas de negócio protegidas
 
 O package registra o alias `uspdevApiKeys`, mas a aplicação deve aplicá-lo às

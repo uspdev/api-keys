@@ -23,6 +23,9 @@ interface ApiKeyManager
     /** Autentica um token e registra os metadados quando seu uso é válido. */
     public function authenticate(string $token, ?string $ipAddress = null): ?ApiKey;
 
-    /** Revoga uma credencial para que ela não possa autenticar novamente. */
-    public function revoke(ApiKey $apiKey): void;
+    /** Revoga uma credencial e registra o responsável pela operação. */
+    public function revoke(ApiKey $apiKey, ?int $revokedBy = null): void;
+
+    /** Cria uma nova credencial equivalente e revoga a credencial anterior. */
+    public function renew(ApiKey $apiKey, ?int $createdBy = null): CreatedApiKeyDto;
 }

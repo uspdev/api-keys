@@ -2,7 +2,9 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title h5">API Key criada com sucesso</h3>
+        <h3 class="modal-title h5">
+          {{ ($action ?? 'created') === 'renewed' ? 'API Key renovada com sucesso' : 'API Key criada com sucesso' }}
+        </h3>
         <button type="button" class="close" aria-label="Fechar" data-api-keys-close>
           <span aria-hidden="true">&times;</span>
         </button>

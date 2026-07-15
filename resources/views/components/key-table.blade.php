@@ -58,11 +58,21 @@
                       <dt>Revogada em</dt>
                       <dd>{{ $apiKey->revoked_at->format('d/m/Y H:i') }}</dd>
                     @endif
+                    @if ($apiKey->revoked_by !== null)
+                      <dt>Revogada pelo usuário ID</dt>
+                      <dd>{{ $apiKey->revoked_by }}</dd>
+                    @endif
                   </dl>
                 </div>
               </details>
 
               @if ($apiKey->isActive())
+                <form method="POST" action="{{ $apiKey->managerRenewUrl($owner, $ownerAlias) }}" class="d-inline"
+                  data-api-keys-renew-form>
+                  @csrf
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Renovar</button>
+                </form>
+
                 <form method="POST" action="{{ $apiKey->managerRevokeUrl($owner, $ownerAlias) }}" class="d-inline"
                   data-api-keys-revoke-form>
                   @csrf

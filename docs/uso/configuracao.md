@@ -45,6 +45,11 @@ Os valores de `purpose` e `role` são definidos pela aplicação hospedeira:
 O package persiste esses valores como strings. A aplicação define o
 significado deles e o mapeamento para suas permissions.
 
+O ciclo administrativo não exige configuração adicional: a interface usa a
+ability de `api-keys.management.ability` para criar, renovar e revogar. O
+usuário autenticado deve fornecer um identificador numérico para que `created_by`
+e `revoked_by` sejam registrados.
+
 ## Opções sem variável de ambiente
 
 | Chave | Padrão | Uso |

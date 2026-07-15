@@ -462,9 +462,16 @@ Route::middleware('uspdev.api-keys:tasks.create');
 ```
 
 - se `owner_id` aceitará apenas bigint ou também UUID/ULID;
-- significado exato da ação “renovar”;
-- se registros revogados poderão ser excluídos;
-- se haverá soft delete;
-- se será armazenado motivo e responsável pela revogação;
 - se a auditoria será somente agregada ou terá histórico por requisição;
 - se autenticação por query string será suportada.
+
+## Decisões fechadas sobre o ciclo de vida administrativo
+
+- Renovar significa criar uma nova API Key e revogar a anterior em uma única
+  operação transacional.
+- A renovação copia nome, `purpose`, `role` e validade da chave anterior e só
+  pode ser executada para uma chave ativa.
+- Registros revogados permanecem disponíveis para visualização e não podem ser
+  excluídos pelo package.
+- O model não usa soft delete.
+- A revogação persiste `revoked_at` e `revoked_by`, sem motivo de revogação.

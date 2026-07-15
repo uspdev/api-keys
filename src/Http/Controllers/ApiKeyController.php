@@ -70,7 +70,7 @@ class ApiKeyController
         $data = $request->validated();
 
         $expiresAt = $this->parseExpiration($data['expires_at'] ?? null);
-        $createdBy = $this->resolveCreatorId($request);
+        $createdBy = $this->resolveAuthenticatedUserId($request);
         $created = $this->apiKeys->create(
             $ownerModel,
             $data['name'],
@@ -83,6 +83,7 @@ class ApiKeyController
         return redirect()->back()->with('api-keys.created', [
             'owner_alias' => $ownerAlias,
             'owner_key' => (string) $ownerModel->getRouteKey(),
+            'action' => 'created',
             'encrypted_token' => $this->encrypter->encrypt($created->plainTextToken(), false),
         ]);
     }
@@ -98,9 +99,30 @@ class ApiKeyController
             abort(404);
         }
 
-        $this->apiKeys->revoke($apiKeyModel);
+        $this->apiKeys->revoke($apiKeyModel, $this->resolveAuthenticatedUserId($request));
 
         return redirect()->back()->with('api-keys.message', 'A API Key foi revogada.');
+    }
+
+    /** Renova uma chave ativa, entregando a nova credencial somente uma vez. */
+    public function renew(Request $request, string $ownerAlias, string $owner, string $apiKey): RedirectResponse
+    {
+        $ownerModel = $this->resolveOwner($ownerAlias, $owner);
+        $this->authorizeManagement($request, $ownerModel);
+        $apiKeyModel = ApiKey::query()->findOrFail($apiKey);
+
+        if (! $this->belongsToOwner($apiKeyModel, $ownerModel)) {
+            abort(404);
+        }
+
+        $renewed = $this->apiKeys->renew($apiKeyModel, $this->resolveAuthenticatedUserId($request));
+
+        return redirect()->back()->with('api-keys.created', [
+            'owner_alias' => $ownerAlias,
+            'owner_key' => (string) $ownerModel->getRouteKey(),
+            'action' => 'renewed',
+            'encrypted_token' => $this->encrypter->encrypt($renewed->plainTextToken(), false),
+        ]);
     }
 
     /** Garante que o usuário logado pode administrar chaves deste owner. */
@@ -224,8 +246,8 @@ class ApiKeyController
         return $expiration === false ? null : $expiration->setTime(23, 59, 59);
     }
 
-    /** Mantém apenas identificadores numéricos compatíveis com a coluna created_by. */
-    private function resolveCreatorId(Request $request): ?int
+    /** Mantém apenas identificadores numéricos compatíveis com os campos de auditoria. */
+    private function resolveAuthenticatedUserId(Request $request): ?int
     {
         $identifier = $request->user()?->getAuthIdentifier();
 

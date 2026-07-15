@@ -66,6 +66,12 @@ As rotas administrativas usam `web` e `auth` por padrão e exigem a ability
 `manageApiKeys` no usuário logado para o owner. A aplicação pode ajustar o
 middleware e o nome da ability em `api-keys.management`.
 
+Chaves ativas podem ser renovadas pela interface: o package cria uma nova
+credencial com os mesmos metadados e validade, revoga a anterior em uma
+transação e exibe o novo token uma única vez. Registros revogados permanecem
+visíveis, sem exclusão ou soft delete; `revoked_by` registra o identificador
+numérico do usuário responsável.
+
 ### Página administrativa opcional
 
 O package também fornece uma página completa que reutiliza o mesmo componente

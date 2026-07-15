@@ -28,6 +28,7 @@ class ApiKey extends Model
         'role',
         'expires_at',
         'created_by',
+        'revoked_by',
     ];
 
     protected $hidden = [
@@ -42,6 +43,7 @@ class ApiKey extends Model
             'expires_at' => 'datetime',
             'revoked_at' => 'datetime',
             'created_by' => 'integer',
+            'revoked_by' => 'integer',
         ];
     }
 
@@ -135,6 +137,18 @@ class ApiKey extends Model
         $ownerAlias = self::resolveManagerOwnerAlias($owner, $ownerAlias);
 
         return route('api-keys.keys.revoke', [
+            'ownerAlias' => $ownerAlias,
+            'owner' => (string) $owner->getRouteKey(),
+            'apiKey' => $this->getRouteKey(),
+        ]);
+    }
+
+    /** Monta a URL de renovação de uma chave vinculada ao owner informado. */
+    public function managerRenewUrl(Model $owner, ?string $ownerAlias = null): string
+    {
+        $ownerAlias = self::resolveManagerOwnerAlias($owner, $ownerAlias);
+
+        return route('api-keys.keys.renew', [
             'ownerAlias' => $ownerAlias,
             'owner' => (string) $owner->getRouteKey(),
             'apiKey' => $this->getRouteKey(),

@@ -11,6 +11,7 @@
   $storeUrl = $managerData['storeUrl'];
   $createdApiKey = session('api-keys.created');
   $createdApiKeyToken = null;
+  $createdApiKeyAction = is_array($createdApiKey) ? ($createdApiKey['action'] ?? 'created') : 'created';
   $createdApiKeyBelongsToManager =
       is_array($createdApiKey) &&
       ($createdApiKey['owner_alias'] ?? null) === $ownerAlias &&
@@ -61,7 +62,10 @@
   @include('api-keys::components.create-modal', ['storeUrl' => $storeUrl])
 
   @if ($createdApiKeyBelongsToManager)
-    @include('api-keys::components.secret-modal', ['token' => $createdApiKeyToken])
+    @include('api-keys::components.secret-modal', [
+        'token' => $createdApiKeyToken,
+        'action' => $createdApiKeyAction,
+    ])
   @endif
 </section>
 
@@ -104,7 +108,7 @@
         return;
       }
 
-      if (modal.dataset.apiKeyModal === 'secret') {
+      if (modal.dataset.apiKeysModal === 'secret') {
         const secret = modal.querySelector('.api-keys-secret-value');
 
         if (secret) {
@@ -139,7 +143,7 @@
 
     manager.querySelectorAll('[data-api-keys-open]').forEach((button) => {
       button.addEventListener('click', () => {
-        const modal = manager.querySelector(`[data-api-keys-modal="${button.dataset.apiKeyOpen}"]`);
+        const modal = manager.querySelector(`[data-api-keys-modal="${button.dataset.apiKeysOpen}"]`);
         openModal(modal);
       });
     });
@@ -150,7 +154,7 @@
 
     manager.querySelectorAll('[data-api-keys-copy]').forEach((button) => {
       button.addEventListener('click', async () => {
-        const value = manager.querySelector(button.dataset.apiKeyCopy);
+        const value = manager.querySelector(button.dataset.apiKeysCopy);
 
         if (!value) {
           return;
@@ -170,6 +174,14 @@
     manager.querySelectorAll('[data-api-keys-revoke-form]').forEach((form) => {
       form.addEventListener('submit', (event) => {
         if (!window.confirm('Revogar esta API Key? Ela deixará de autenticar imediatamente.')) {
+          event.preventDefault();
+        }
+      });
+    });
+
+    manager.querySelectorAll('[data-api-keys-renew-form]').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        if (!window.confirm('Renovar esta API Key? Uma nova chave será criada e a anterior será revogada.')) {
           event.preventDefault();
         }
       });

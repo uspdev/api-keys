@@ -109,6 +109,7 @@ O package carrega automaticamente suas próprias rotas administrativas:
 | `/api-keys/{ownerAlias}/{owner}` | `api-keys.admin.show` | Exibe o gerenciador do owner. |
 | `/api-keys/{ownerAlias}/{owner}/keys` | `api-keys.keys.store` | Cria uma API Key. |
 | `/api-keys/{ownerAlias}/{owner}/keys/{apiKey}/revoke` | `api-keys.keys.revoke` | Revoga uma API Key. |
+| `/api-keys/{ownerAlias}/{owner}/keys/{apiKey}/renew` | `api-keys.keys.renew` | Cria uma nova chave e revoga a anterior. |
 
 Essas rotas usam o middleware configurado em `api-keys.management.middleware`
 e a ability configurada em `api-keys.management.ability`.
@@ -118,3 +119,8 @@ e a ability configurada em `api-keys.management.ability`.
 Na interface administrativa, `created_by` recebe o `codpes` da USP retornado
 por `getAuthIdentifier()` pelo usuário autenticado. O package armazena esse
 valor como metadado numérico e não cria relacionamento com o model de usuário.
+
+Na revogação, `revoked_by` recebe o mesmo tipo de identificador. A renovação
+usa a operação de criação e revogação dentro de uma transação: a nova chave
+recebe `created_by` e a anterior recebe `revoked_by`. Registros revogados
+continuam disponíveis para consulta e não são removidos.
