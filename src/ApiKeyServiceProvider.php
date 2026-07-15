@@ -51,12 +51,12 @@ class ApiKeyServiceProvider extends ServiceProvider
         if (
             ! (bool) config('api-keys.theme.menu.enabled', false)
             || ! (bool) config('api-keys.management.page.enabled', true)
-            || ! config()->has('usp-theme.menu')
+            || ! config()->has('laravel-usp-theme.menu')
         ) {
             return;
         }
 
-        $menu = config('usp-theme.menu');
+        $menu = config('laravel-usp-theme.menu');
 
         if (! is_array($menu)) {
             return;
@@ -81,6 +81,6 @@ class ApiKeyServiceProvider extends ServiceProvider
             }
         }
 
-        config(['usp-theme.menu' => [...$menu, $item]]);
+        config(['laravel-usp-theme.menu' => [...$menu, $item]]);
     }
 }

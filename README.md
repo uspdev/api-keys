@@ -116,7 +116,7 @@ Para adicionar automaticamente a página ao menu principal configurado em
 
 Quando `url` não for informado, o package utiliza o valor de
 `api-keys.prefix`. O item é acrescentado ao menu existente em
-`usp-theme.menu`; os demais itens não são alterados. A integração é
+`laravel-usp-theme.menu`; os demais itens não são alterados. A integração é
 desabilitada por padrão e só funciona quando o theme disponibiliza essa
 configuração.
 

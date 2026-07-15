@@ -78,11 +78,12 @@ significado deles e o mapeamento para suas permissions.
 
 ```dotenv
 API_KEYS_MANAGEMENT_PAGE_ENABLED=true
-API_KEYS_MANAGEMENT_LAYOUT=layouts.app
+# Caso utilize o laravel-usp-theme
+API_KEYS_MANAGEMENT_LAYOUT=laravel-usp-theme::master
+API_KEYS_USP_THEME_MENU_ENABLED=true
 API_KEYS_MIDDLEWARE_ALIAS=uspdevApiKeys
 API_KEYS_REQUEST_ATTRIBUTE=apiKey
 API_KEYS_QUERY_PARAMETER_ENABLED=false
-API_KEYS_USP_THEME_MENU_ENABLED=false
 ```
 
 Depois de alterar variáveis em uma aplicação com configuração cacheada,

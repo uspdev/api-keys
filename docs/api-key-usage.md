@@ -118,7 +118,7 @@ Essa integração é opt-in e preserva os itens que já existem em
 ],
 ```
 
-O item será adicionado a `usp-theme.menu` durante o boot do package. Se `url`
+O item será adicionado a `laravel-usp-theme.menu` durante o boot do package. Se `url`
 for `null`, o valor de `api-keys.prefix` será usado. Para remover o link,
 mantenha `enabled` como `false`.
 
