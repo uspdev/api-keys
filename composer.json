@@ -1,12 +1,12 @@
 {
-    "name": "uspdev/api-key",
+    "name": "uspdev/api-keys",
     "description": "Gerenciamento seguro de API keys associadas a modelos Laravel para integrações e consumo por inteligência artificial.",
     "type": "library",
     "minimum-stability": "dev",
     "license": "GPL-2.0-or-later",
     "autoload": {
         "psr-4": {
-            "Uspdev\\ApiKey\\": "src/"
+            "Uspdev\\ApiKeys\\": "src/"
         }
     },
     "authors": [
@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Uspdev\\ApiKey\\ApiKeyServiceProvider"
+                "Uspdev\\ApiKeys\\ApiKeyServiceProvider"
             ]
         }
     }

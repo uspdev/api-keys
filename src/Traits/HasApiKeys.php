@@ -1,9 +1,9 @@
 <?php
 
-namespace Uspdev\ApiKey\Traits;
+namespace Uspdev\ApiKeys\Traits;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Uspdev\ApiKey\Models\ApiKey;
+use Uspdev\ApiKeys\Models\ApiKey;
 
 /** Adiciona o relacionamento polimórfico de API Keys ao modelo proprietário. */
 trait HasApiKeys

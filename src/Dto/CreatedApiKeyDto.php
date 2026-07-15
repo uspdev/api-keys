@@ -1,9 +1,9 @@
 <?php
 
-namespace Uspdev\ApiKey\Dto;
+namespace Uspdev\ApiKeys\Dto;
 
 use SensitiveParameter;
-use Uspdev\ApiKey\Models\ApiKey;
+use Uspdev\ApiKeys\Models\ApiKey;
 
 /** Transporta uma chave persistida e sua credencial única em texto puro. */
 final class CreatedApiKeyDto

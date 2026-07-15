@@ -16,10 +16,10 @@ $middleware = [
 $managementPage = [
     // A página completa pode ser desabilitada quando a aplicação usa somente
     // o componente Blade <x-api-keys::manager />.
-    'enabled' => (bool) env('API_KEY_MANAGEMENT_PAGE_ENABLED', true),
+    'enabled' => (bool) env('API_KEYS_MANAGEMENT_PAGE_ENABLED', true),
 
     // Layout fornecido pela aplicação hospedeira.
-    'layout' => env('API_KEY_MANAGEMENT_LAYOUT', 'layouts.app'),
+    'layout' => env('API_KEYS_MANAGEMENT_LAYOUT', 'layouts.app'),
 ];
 
 $themeMenuItem = [
@@ -54,27 +54,27 @@ return [
 
     // Formato público da credencial.
     // Exemplo: gpp_v1_4Y7KQ2.segredo
-    'credential_prefix' => env('API_KEY_CREDENTIAL_PREFIX', 'gpp'),
-    'credential_version' => env('API_KEY_CREDENTIAL_VERSION', 'v1'),
+    'credential_prefix' => env('API_KEYS_CREDENTIAL_PREFIX', 'gpp'),
+    'credential_version' => env('API_KEYS_CREDENTIAL_VERSION', 'v1'),
 
     // Tamanho do identificador público e do segredo da credencial.
-    'public_prefix_length' => (int) env('API_KEY_PUBLIC_PREFIX_LENGTH', 6),
-    'secret_bytes' => (int) env('API_KEY_SECRET_BYTES', 32),
+    'public_prefix_length' => (int) env('API_KEYS_PUBLIC_PREFIX_LENGTH', 6),
+    'secret_bytes' => (int) env('API_KEYS_SECRET_BYTES', 32),
 
     // Autenticação das rotas de negócio protegidas por API Key.
     'middleware' => [
-        // Alias usado pela aplicação: Route::middleware('uspdevApiKey').
-        'alias' => env('API_KEY_MIDDLEWARE_ALIAS', 'uspdevApiKey'),
+        // Alias usado pela aplicação: Route::middleware('uspdevApiKeys').
+        'alias' => env('API_KEYS_MIDDLEWARE_ALIAS', 'uspdevApiKeys'),
 
         // Atributo onde o middleware disponibiliza a chave autenticada.
-        'request_attribute' => env('API_KEY_REQUEST_ATTRIBUTE', 'apiKey'),
+        'request_attribute' => env('API_KEYS_REQUEST_ATTRIBUTE', 'apiKey'),
     ],
 
     // Permite API Key na query string somente quando explicitamente habilitado.
     // O uso do header Authorization: Bearer é o padrão recomendado.
     'query_parameter' => [
-        'enabled' => (bool) env('API_KEY_QUERY_PARAMETER_ENABLED', false),
-        'name' => env('API_KEY_QUERY_PARAMETER_NAME', 'api_key'),
+        'enabled' => (bool) env('API_KEYS_QUERY_PARAMETER_ENABLED', false),
+        'name' => env('API_KEYS_QUERY_PARAMETER_NAME', 'api_key'),
     ],
 
     // Rotas e autorização da interface administrativa do package.
@@ -87,7 +87,7 @@ return [
     // Integração opcional com o menu principal do laravel-usp-theme.
     'theme' => [
         'menu' => [
-            'enabled' => (bool) env('API_KEY_USP_THEME_MENU_ENABLED', false),
+            'enabled' => (bool) env('API_KEYS_USP_THEME_MENU_ENABLED', false),
             'item' => $themeMenuItem,
         ],
     ],

@@ -79,11 +79,11 @@ O backend adapta a resposta com base no propósito da chave utilizada:
 ## Middleware
 
 ```php
-Route::middleware('uspdevApiKey')->group(function () {
+Route::middleware('uspdevApiKeys')->group(function () {
 });
 ```
 
-Injeta uspdevApikey no request()
+Injeta `uspdevApiKeys` no request()
 
 ```php
 request()->attributes->set('apiKey', $apiKey);
@@ -471,7 +471,6 @@ Uma chave destinada ao consumo por Inteligência Artificial (`purpose = "ai"`) n
   "role": "viewer",
 }
 ```
-
 
 
 

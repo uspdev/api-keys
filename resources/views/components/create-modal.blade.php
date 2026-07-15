@@ -1,11 +1,11 @@
-<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-api-key-modal="create" style="display: none;">
+<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-api-keys-modal="create" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <form method="POST" action="{{ $storeUrl }}">
         @csrf
         <div class="modal-header">
           <h3 class="modal-title h5">Nova API Key</h3>
-          <button type="button" class="close" aria-label="Fechar" data-api-key-close>
+          <button type="button" class="close" aria-label="Fechar" data-api-keys-close>
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -63,7 +63,7 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-api-key-close>Cancelar</button>
+          <button type="button" class="btn btn-secondary" data-api-keys-close>Cancelar</button>
           <button type="submit" class="btn btn-primary">Criar chave</button>
         </div>
       </form>

@@ -1,34 +1,34 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Uspdev\ApiKey\Http\Controllers\ApiKeyController;
+use Uspdev\ApiKeys\Http\Controllers\ApiKeyController;
 
 Route::group([
-    'prefix' => config('api-key.prefix'),
-    'middleware' => (array) config('api-key.management.middleware', ['web', 'auth']),
+    'prefix' => config('api-keys.prefix'),
+    'middleware' => (array) config('api-keys.management.middleware', ['web', 'auth']),
 ], function (): void {
-    if ((bool) config('api-key.management.page.enabled', true)) {
+    if ((bool) config('api-keys.management.page.enabled', true)) {
         Route::get('/', [ApiKeyController::class, 'index'])
-            ->name('api-key.admin.index');
+            ->name('api-keys.admin.index');
 
         Route::get('{ownerAlias}', [ApiKeyController::class, 'owners'])
             ->where('ownerAlias', '[A-Za-z0-9_-]+')
-            ->name('api-key.admin.owners');
+            ->name('api-keys.admin.owners');
 
         Route::get('{ownerAlias}/{owner}', [ApiKeyController::class, 'show'])
             ->where('ownerAlias', '[A-Za-z0-9_-]+')
             ->where('owner', '[^/]+')
-            ->name('api-key.admin.show');
+            ->name('api-keys.admin.show');
     }
 
     Route::post('{ownerAlias}/{owner}/keys', [ApiKeyController::class, 'store'])
         ->where('ownerAlias', '[A-Za-z0-9_-]+')
         ->where('owner', '[^/]+')
-        ->name('api-key.keys.store');
+        ->name('api-keys.keys.store');
 
     Route::post('{ownerAlias}/{owner}/keys/{apiKey}/revoke', [ApiKeyController::class, 'revoke'])
         ->where('ownerAlias', '[A-Za-z0-9_-]+')
         ->where('owner', '[^/]+')
         ->whereNumber('apiKey')
-        ->name('api-key.keys.revoke');
+        ->name('api-keys.keys.revoke');
 });

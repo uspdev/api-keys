@@ -1,11 +1,11 @@
 <?php
 
-namespace Uspdev\ApiKey\Contracts;
+namespace Uspdev\ApiKeys\Contracts;
 
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
-use Uspdev\ApiKey\Dto\CreatedApiKeyDto;
-use Uspdev\ApiKey\Models\ApiKey;
+use Uspdev\ApiKeys\Dto\CreatedApiKeyDto;
+use Uspdev\ApiKeys\Models\ApiKey;
 
 /** Define as operações de ciclo de vida de chaves expostas pelo pacote. */
 interface ApiKeyManager

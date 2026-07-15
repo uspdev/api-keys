@@ -1,6 +1,6 @@
 <?php
 
-namespace Uspdev\ApiKey\Services;
+namespace Uspdev\ApiKeys\Services;
 
 use DateTimeInterface;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use InvalidArgumentException;
 use RuntimeException;
-use Uspdev\ApiKey\Contracts\ApiKeyManager;
-use Uspdev\ApiKey\Dto\CreatedApiKeyDto;
-use Uspdev\ApiKey\Models\ApiKey;
+use Uspdev\ApiKeys\Contracts\ApiKeyManager;
+use Uspdev\ApiKeys\Dto\CreatedApiKeyDto;
+use Uspdev\ApiKeys\Models\ApiKey;
 
 /** Cria, autentica e revoga credenciais de API Key. */
 class ApiKeyService implements ApiKeyManager
@@ -37,11 +37,11 @@ class ApiKeyService implements ApiKeyManager
         }
 
         $credentialPrefix = (string) $this->config->get(
-            'api-key.credential_prefix',
+            'api-keys.credential_prefix',
             'gpp'
         );
         $credentialVersion = (string) $this->config->get(
-            'api-key.credential_version',
+            'api-keys.credential_version',
             'v1'
         );
 
@@ -122,7 +122,7 @@ class ApiKeyService implements ApiKeyManager
     /** Gera o identificador público e indexado usado para localizar a credencial. */
     private function newPublicPrefix(): string
     {
-        $length = max(1, (int) $this->config->get('api-key.public_prefix_length', 6));
+        $length = max(1, (int) $this->config->get('api-keys.public_prefix_length', 6));
 
         return $this->randomString($length, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
     }
@@ -130,7 +130,7 @@ class ApiKeyService implements ApiKeyManager
     /** Gera um segredo imprevisível e seguro para URL antes de aplicar o hash. */
     private function newSecret(): string
     {
-        $bytes = max(32, (int) $this->config->get('api-key.secret_bytes', 32));
+        $bytes = max(32, (int) $this->config->get('api-keys.secret_bytes', 32));
 
         return rtrim(strtr(base64_encode(random_bytes($bytes)), '+/', '-_'), '=');
     }
@@ -139,11 +139,11 @@ class ApiKeyService implements ApiKeyManager
     private function parseToken(string $token): ?array
     {
         $credentialPrefix = (string) $this->config->get(
-            'api-key.credential_prefix',
+            'api-keys.credential_prefix',
             'gpp'
         );
         $credentialVersion = (string) $this->config->get(
-            'api-key.credential_version',
+            'api-keys.credential_version',
             'v1'
         );
         $start = $credentialPrefix . '_' . $credentialVersion . '_';

@@ -1,6 +1,6 @@
 <?php
 
-namespace Uspdev\ApiKey\Http\Requests;
+namespace Uspdev\ApiKeys\Http\Requests;
 
 use Closure;
 use DateTimeImmutable;
@@ -19,8 +19,8 @@ class StoreApiKeyRequest extends FormRequest
     /** Retorna as regras configuráveis dos campos de criação da credencial. */
     public function rules(): array
     {
-        $purposes = array_keys((array) config('api-key.interface.purposes', []));
-        $roles = array_keys((array) config('api-key.interface.roles', []));
+        $purposes = array_keys((array) config('api-keys.interface.purposes', []));
+        $roles = array_keys((array) config('api-keys.interface.roles', []));
 
         return [
             'name' => ['required', 'string', 'max:255'],

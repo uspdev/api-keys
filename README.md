@@ -17,14 +17,14 @@ Este componente provê uma infraestrutura robusta e segura para a gestão de cha
 Execute o comando abaixo para instalar o pacote:
 
 ```bash
-composer require uspdev/api-key
+composer require uspdev/api-keys
 ```
 
 ### 2. **Publique a configuração e as migrations**
 
 ```bash
-php artisan vendor:publish --tag=api-key-config
-php artisan vendor:publish --tag=api-key-migrations
+php artisan vendor:publish --tag=api-keys-config
+php artisan vendor:publish --tag=api-keys-migrations
 ```
 
 ### 3. **Execute as migrations**
@@ -40,7 +40,7 @@ php artisan migrate
 
 ## Configuração
 
-A biblioteca pode ser configurada editando o arquivo `config/api-key.php`, publicado durante a instalação.
+A biblioteca pode ser configurada editando o arquivo `config/api-keys.php`, publicado durante a instalação.
 
 Consulte o [guia de uso das páginas e componentes Blade](docs/api-key-usage.md) para exemplos completos de configuração, incorporação e autorização.
 
@@ -60,11 +60,11 @@ O model deve utilizar `HasApiKeys`. Depois, incorpore o gerenciador na página d
 <x-api-keys::manager :owner="$project" />
 ```
 
-O package fornece a tabela, criação, exibição única do token e revogação. As rotas dessas ações usam o prefixo configurado em `api-key.prefix` e os middlewares configurados em `api-key.management`, seguindo o padrão dos packages USPdev.
+O package fornece a tabela, criação, exibição única do token e revogação. As rotas dessas ações usam o prefixo configurado em `api-keys.prefix` e os middlewares configurados em `api-keys.management`, seguindo o padrão dos packages USPdev.
 
 As rotas administrativas usam `web` e `auth` por padrão e exigem a ability
 `manageApiKeys` no usuário logado para o owner. A aplicação pode ajustar o
-middleware e o nome da ability em `api-key.management`.
+middleware e o nome da ability em `api-keys.management`.
 
 ### Página administrativa opcional
 
@@ -77,7 +77,7 @@ Blade do gerenciador:
 /api-keys/project/15
 ~~~
 
-O primeiro endereço lista os aliases configurados em `api-key.owners`; o
+O primeiro endereço lista os aliases configurados em `api-keys.owners`; o
 segundo lista os owners autorizados para o alias; e o terceiro exibe a tela de
 gerenciamento do owner. A página usa `layouts.app` por padrão, compatível com o
 layout visual fornecido pelo `laravel-usp-theme`, e pode ser ajustada ou
@@ -93,13 +93,13 @@ desabilitada:
 ~~~
 
 O layout deve ser fornecido pela aplicação hospedeira. A autorização continua
-sendo feita pela ability configurada em `api-key.management.ability` para cada
+sendo feita pela ability configurada em `api-keys.management.ability` para cada
 owner.
 
 ### Integração com o laravel-usp-theme
 
 Para adicionar automaticamente a página ao menu principal configurado em
-`config/usp-theme.php`, habilite a integração no `config/api-key.php` publicado:
+`config/usp-theme.php`, habilite a integração no `config/api-keys.php` publicado:
 
 ~~~php
 'theme' => [
@@ -115,7 +115,7 @@ Para adicionar automaticamente a página ao menu principal configurado em
 ~~~
 
 Quando `url` não for informado, o package utiliza o valor de
-`api-key.prefix`. O item é acrescentado ao menu existente em
+`api-keys.prefix`. O item é acrescentado ao menu existente em
 `usp-theme.menu`; os demais itens não são alterados. A integração é
 desabilitada por padrão e só funciona quando o theme disponibiliza essa
 configuração.

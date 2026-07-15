@@ -1,12 +1,12 @@
 <?php
 
-namespace Uspdev\ApiKey;
+namespace Uspdev\ApiKeys;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
-use Uspdev\ApiKey\Contracts\ApiKeyManager;
-use Uspdev\ApiKey\Http\Middleware\AuthenticateApiKey;
-use Uspdev\ApiKey\Services\ApiKeyService;
+use Uspdev\ApiKeys\Contracts\ApiKeyManager;
+use Uspdev\ApiKeys\Http\Middleware\AuthenticateApiKey;
+use Uspdev\ApiKeys\Services\ApiKeyService;
 
 /** Registra os serviços e recursos publicáveis do pacote no Laravel. */
 class ApiKeyServiceProvider extends ServiceProvider
@@ -15,8 +15,8 @@ class ApiKeyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/api-key.php',
-            'api-key'
+            __DIR__ . '/../config/api-keys.php',
+            'api-keys'
         );
 
         $this->app->singleton(ApiKeyManager::class, ApiKeyService::class);
@@ -25,7 +25,7 @@ class ApiKeyServiceProvider extends ServiceProvider
     /** Registra o middleware e disponibiliza configuração e migrations para publicação. */
     public function boot(Router $router): void
     {
-        $alias = (string) config('api-key.middleware.alias', 'uspdevApiKey');
+        $alias = (string) config('api-keys.middleware.alias', 'uspdevApiKeys');
         $router->aliasMiddleware($alias, AuthenticateApiKey::class);
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'api-keys');
@@ -33,24 +33,24 @@ class ApiKeyServiceProvider extends ServiceProvider
         $this->registerUspThemeMenu();
 
         $this->publishes([
-            __DIR__ . '/../config/api-key.php' => config_path('api-key.php'),
-        ], 'api-key-config');
+            __DIR__ . '/../config/api-keys.php' => config_path('api-keys.php'),
+        ], 'api-keys-config');
 
         $this->publishes([
             __DIR__ . '/../database/migrations' => database_path('migrations'),
-        ], 'api-key-migrations');
+        ], 'api-keys-migrations');
 
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/api-keys'),
-        ], 'api-key-views');
+        ], 'api-keys-views');
     }
 
     /** Acrescenta a página ao menu do USP Theme sem substituir itens da aplicação. */
     private function registerUspThemeMenu(): void
     {
         if (
-            ! (bool) config('api-key.theme.menu.enabled', false)
-            || ! (bool) config('api-key.management.page.enabled', true)
+            ! (bool) config('api-keys.theme.menu.enabled', false)
+            || ! (bool) config('api-keys.management.page.enabled', true)
             || ! config()->has('usp-theme.menu')
         ) {
             return;
@@ -62,11 +62,11 @@ class ApiKeyServiceProvider extends ServiceProvider
             return;
         }
 
-        $item = (array) config('api-key.theme.menu.item', []);
+        $item = (array) config('api-keys.theme.menu.item', []);
         $url = $item['url'] ?? null;
 
         if (! is_string($url) || $url === '') {
-            $url = trim((string) config('api-key.prefix', 'api-keys'), '/');
+            $url = trim((string) config('api-keys.prefix', 'api-keys'), '/');
         }
 
         if (! isset($item['text']) || ! is_string($item['text']) || $item['text'] === '') {

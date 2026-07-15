@@ -1,7 +1,7 @@
 @props(['owner', 'ownerAlias' => null])
 
 @php
-  $managerData = \Uspdev\ApiKey\Models\ApiKey::managerData($owner, $ownerAlias);
+  $managerData = \Uspdev\ApiKeys\Models\ApiKey::managerData($owner, $ownerAlias);
   $apiKeys = $managerData['apiKeys'];
   $ownerAlias = $managerData['ownerAlias'];
   $ownerRouteKey = $managerData['ownerRouteKey'];
@@ -9,7 +9,7 @@
   $purposes = $managerData['purposes'];
   $roles = $managerData['roles'];
   $storeUrl = $managerData['storeUrl'];
-  $createdApiKey = session('api-key.created');
+  $createdApiKey = session('api-keys.created');
   $createdApiKeyToken = null;
   $createdApiKeyBelongsToManager =
       is_array($createdApiKey) &&
@@ -25,7 +25,7 @@
       } catch (\Throwable) {
           $createdApiKeyToken = null;
       } finally {
-          session()->forget('api-key.created');
+          session()->forget('api-keys.created');
       }
   }
 
@@ -34,21 +34,21 @@
       $errors->has('name') || $errors->has('purpose') || $errors->has('role') || $errors->has('expires_at');
 @endphp
 
-<section id="{{ $componentId }}" class="api-key-manager" data-api-key-manager>
+<section id="{{ $componentId }}" class="api-keys-manager" data-api-keys-manager>
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
       <h2 class="h5 mb-1">API Keys</h2>
       <p class="text-muted mb-0">Credenciais vinculadas a este recurso.</p>
     </div>
 
-    <button type="button" class="btn btn-primary" data-api-key-open="create">
+    <button type="button" class="btn btn-primary" data-api-keys-open="create">
       Nova API Key
     </button>
   </div>
 
-  @if (session('api-key.message'))
+  @if (session('api-keys.message'))
     <div class="alert alert-success" role="status">
-      {{ session('api-key.message') }}
+      {{ session('api-keys.message') }}
     </div>
   @endif
 
@@ -67,13 +67,13 @@
 
 @once
   <style>
-    [data-api-key-manager] .api-key-secret-value {
+    [data-api-keys-manager] .api-keys-secret-value {
       display: block;
       overflow-wrap: anywhere;
       white-space: pre-wrap;
     }
 
-    [data-api-key-manager] .api-key-modal-backdrop {
+    [data-api-keys-manager] .api-keys-modal-backdrop {
       background: rgba(0, 0, 0, .5);
       bottom: 0;
       left: 0;
@@ -83,7 +83,7 @@
       z-index: 1040;
     }
 
-    [data-api-key-manager] .modal {
+    [data-api-keys-manager] .modal {
       z-index: 1050;
     }
   </style>
@@ -105,19 +105,19 @@
       }
 
       if (modal.dataset.apiKeyModal === 'secret') {
-        const secret = modal.querySelector('.api-key-secret-value');
+        const secret = modal.querySelector('.api-keys-secret-value');
 
         if (secret) {
           secret.textContent = 'O token não está mais disponível.';
         }
 
-        modal.querySelectorAll('[data-api-key-copy]').forEach((button) => button.disabled = true);
+        modal.querySelectorAll('[data-api-keys-copy]').forEach((button) => button.disabled = true);
       }
 
       modal.style.display = 'none';
       modal.classList.remove('show');
       modal.setAttribute('aria-hidden', 'true');
-      document.querySelectorAll('.api-key-modal-backdrop').forEach((backdrop) => backdrop.remove());
+      document.querySelectorAll('.api-keys-modal-backdrop').forEach((backdrop) => backdrop.remove());
       document.body.classList.remove('modal-open');
     };
 
@@ -131,24 +131,24 @@
       modal.setAttribute('aria-hidden', 'false');
 
       const backdrop = document.createElement('div');
-      backdrop.className = 'api-key-modal-backdrop';
+      backdrop.className = 'api-keys-modal-backdrop';
       backdrop.addEventListener('click', () => closeModal(modal));
       document.body.appendChild(backdrop);
       document.body.classList.add('modal-open');
     };
 
-    manager.querySelectorAll('[data-api-key-open]').forEach((button) => {
+    manager.querySelectorAll('[data-api-keys-open]').forEach((button) => {
       button.addEventListener('click', () => {
-        const modal = manager.querySelector(`[data-api-key-modal="${button.dataset.apiKeyOpen}"]`);
+        const modal = manager.querySelector(`[data-api-keys-modal="${button.dataset.apiKeyOpen}"]`);
         openModal(modal);
       });
     });
 
-    manager.querySelectorAll('[data-api-key-close]').forEach((button) => {
+    manager.querySelectorAll('[data-api-keys-close]').forEach((button) => {
       button.addEventListener('click', () => closeModal(button.closest('.modal')));
     });
 
-    manager.querySelectorAll('[data-api-key-copy]').forEach((button) => {
+    manager.querySelectorAll('[data-api-keys-copy]').forEach((button) => {
       button.addEventListener('click', async () => {
         const value = manager.querySelector(button.dataset.apiKeyCopy);
 
@@ -167,7 +167,7 @@
       });
     });
 
-    manager.querySelectorAll('[data-api-key-revoke-form]').forEach((form) => {
+    manager.querySelectorAll('[data-api-keys-revoke-form]').forEach((form) => {
       form.addEventListener('submit', (event) => {
         if (!window.confirm('Revogar esta API Key? Ela deixará de autenticar imediatamente.')) {
           event.preventDefault();
@@ -176,9 +176,9 @@
     });
 
     @if ($hasCreationErrors)
-      openModal(manager.querySelector('[data-api-key-modal="create"]'));
+      openModal(manager.querySelector('[data-api-keys-modal="create"]'));
     @elseif ($createdApiKeyBelongsToManager)
-      openModal(manager.querySelector('[data-api-key-modal="secret"]'));
+      openModal(manager.querySelector('[data-api-keys-modal="secret"]'));
     @endif
   })();
 </script>

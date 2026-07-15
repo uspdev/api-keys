@@ -1,11 +1,11 @@
-@extends(config('api-key.management.page.layout', 'layouts.app'))
+@extends(config('api-keys.management.page.layout', 'layouts.app'))
 
 @section('title', 'API Keys - ' . $ownerAlias . ' #' . $owner->getRouteKey())
 
 @section('content')
   <div class="container py-4">
     <div class="mb-4">
-      <a href="{{ route('api-key.admin.owners', ['ownerAlias' => $ownerAlias]) }}" class="small">&larr; Recursos de
+      <a href="{{ route('api-keys.admin.owners', ['ownerAlias' => $ownerAlias]) }}" class="small">&larr; Recursos de
         {{ ucfirst($ownerAlias) }}</a>
 
       <h1 class="h3 mb-1">API Keys</h1>

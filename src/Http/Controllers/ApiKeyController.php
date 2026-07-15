@@ -1,6 +1,6 @@
 <?php
 
-namespace Uspdev\ApiKey\Http\Controllers;
+namespace Uspdev\ApiKeys\Http\Controllers;
 
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -9,9 +9,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Uspdev\ApiKey\Contracts\ApiKeyManager;
-use Uspdev\ApiKey\Http\Requests\StoreApiKeyRequest;
-use Uspdev\ApiKey\Models\ApiKey;
+use Uspdev\ApiKeys\Contracts\ApiKeyManager;
+use Uspdev\ApiKeys\Http\Requests\StoreApiKeyRequest;
+use Uspdev\ApiKeys\Models\ApiKey;
 
 /** Processa as ações administrativas usadas pelo componente Blade de API Keys. */
 class ApiKeyController
@@ -80,7 +80,7 @@ class ApiKeyController
             $createdBy,
         );
 
-        return redirect()->back()->with('api-key.created', [
+        return redirect()->back()->with('api-keys.created', [
             'owner_alias' => $ownerAlias,
             'owner_key' => (string) $ownerModel->getRouteKey(),
             'encrypted_token' => $this->encrypter->encrypt($created->plainTextToken(), false),
@@ -100,7 +100,7 @@ class ApiKeyController
 
         $this->apiKeys->revoke($apiKeyModel);
 
-        return redirect()->back()->with('api-key.message', 'A API Key foi revogada.');
+        return redirect()->back()->with('api-keys.message', 'A API Key foi revogada.');
     }
 
     /** Garante que o usuário logado pode administrar chaves deste owner. */
@@ -115,7 +115,7 @@ class ApiKeyController
     private function canManage(Request $request, Model $owner): bool
     {
         $user = $request->user();
-        $ability = (string) config('api-key.management.ability', 'manageApiKeys');
+        $ability = (string) config('api-keys.management.ability', 'manageApiKeys');
 
         if ($user === null) {
             abort(401);
@@ -142,7 +142,7 @@ class ApiKeyController
     /** Resolve um alias seguro e exige que o model seja compatível com HasApiKeys. */
     private function resolveOwnerClass(string $ownerAlias): string
     {
-        $owners = (array) config('api-key.owners', []);
+        $owners = (array) config('api-keys.owners', []);
         $ownerClass = $owners[$ownerAlias] ?? null;
 
         if (! is_string($ownerClass) || ! is_a($ownerClass, Model::class, true)) {
@@ -163,7 +163,7 @@ class ApiKeyController
     {
         $types = [];
 
-        foreach ((array) config('api-key.owners', []) as $alias => $ownerClass) {
+        foreach ((array) config('api-keys.owners', []) as $alias => $ownerClass) {
             if (! is_string($alias) || ! is_string($ownerClass) || ! is_a($ownerClass, Model::class, true)) {
                 continue;
             }

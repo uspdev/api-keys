@@ -1,11 +1,11 @@
 <?php
 
-namespace Uspdev\ApiKey\Models;
+namespace Uspdev\ApiKeys\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use InvalidArgumentException;
-use Uspdev\ApiKey\Contracts\ApiKeyManager;
+use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 
 /** Representa uma credencial com hash vinculada polimorficamente ao proprietário. */
 class ApiKey extends Model
@@ -115,14 +115,14 @@ class ApiKey extends Model
             'apiKeys' => $owner->apiKeys()->latest('created_at')->get(),
             'ownerAlias' => $ownerAlias,
             'ownerRouteKey' => $ownerRouteKey,
-            'purposes' => (array) config('api-key.interface.purposes', []),
-            'roles' => (array) config('api-key.interface.roles', []),
-            'componentId' => 'api-key-manager-' . substr(
+            'purposes' => (array) config('api-keys.interface.purposes', []),
+            'roles' => (array) config('api-keys.interface.roles', []),
+            'componentId' => 'api-keys-manager-' . substr(
                 sha1($ownerAlias . '|' . $ownerRouteKey . '|' . spl_object_id($owner)),
                 0,
                 12,
             ),
-            'storeUrl' => route('api-key.keys.store', [
+            'storeUrl' => route('api-keys.keys.store', [
                 'ownerAlias' => $ownerAlias,
                 'owner' => $ownerRouteKey,
             ]),
@@ -134,7 +134,7 @@ class ApiKey extends Model
     {
         $ownerAlias = self::resolveManagerOwnerAlias($owner, $ownerAlias);
 
-        return route('api-key.keys.revoke', [
+        return route('api-keys.keys.revoke', [
             'ownerAlias' => $ownerAlias,
             'owner' => (string) $owner->getRouteKey(),
             'apiKey' => $this->getRouteKey(),
@@ -144,7 +144,7 @@ class ApiKey extends Model
     /** Resolve e valida o alias configurado para a classe do owner. */
     private static function resolveManagerOwnerAlias(Model $owner, ?string $ownerAlias): string
     {
-        $owners = (array) config('api-key.owners', []);
+        $owners = (array) config('api-keys.owners', []);
 
         if ($ownerAlias !== null) {
             if (($owners[$ownerAlias] ?? null) !== $owner::class) {
@@ -160,7 +160,7 @@ class ApiKey extends Model
 
         if ($resolvedAlias === false) {
             throw new InvalidArgumentException(
-                sprintf('Owner class [%s] must be registered in the api-key.owners configuration.', $owner::class)
+                sprintf('Owner class [%s] must be registered in the api-keys.owners configuration.', $owner::class)
             );
         }
 

@@ -227,7 +227,7 @@ As permissões efetivas continuam sendo definidas pelo owner.
 
 ## Autenticação e autorização
 
-O middleware `uspdevApiKey` é responsável por autenticar a
+O middleware `uspdevApiKeys` é responsável por autenticar a
 credencial, verificar sua validade e disponibilizar a instância de
 `ApiKey` no request:
 
@@ -355,13 +355,26 @@ A geração de contexto para IA, serialização dos dados e otimização de toke
 hospedeira. No núcleo do pacote, ambos são persistidos como strings e o
 serviço não impõe uma lista fixa de valores.
 
-A interface administrativa utiliza `api-key.interface.purposes` e
-`api-key.interface.roles` para definir os valores apresentados e validados.
+A interface administrativa utiliza `api-keys.interface.purposes` e
+`api-keys.interface.roles` para definir os valores apresentados e validados.
 A aplicação pode substituir essas listas pelos seus próprios enums, roles e
 permissions, incluindo os valores fornecidos pela Senha Única. O pacote
 apenas armazena e disponibiliza esses valores; a aplicação hospedeira define
 seu significado e como aplicá-los na autorização e no comportamento associado
 ao `purpose`.
+
+## Exibição temporária do token
+
+Após a criação, o token completo é criptografado com o encrypter da aplicação
+e enviado em uma flash session. O componente só tenta descriptografá-lo quando
+o alias e o identificador do owner armazenados na sessão correspondem ao
+owner que está sendo renderizado. Depois do consumo, o valor é removido da
+sessão.
+
+Se o redirecionamento não renderizar o owner correspondente, o token não será
+exibido em outro owner e a flash session expirará no ciclo seguinte. Por isso,
+o token poderá ser perdido caso a página de destino não contenha o componente
+correto, exigindo a criação de uma nova chave.
 
 ---
 
@@ -440,12 +453,12 @@ src/Providers/
 
 Ainda precisam ser fechados durante o desenvolvimento:
 
-- nome definitivo em singular ou plural: `ApiKey` ou `ApiKeys` -> singular
+- namespace do package no plural: `Uspdev\\ApiKeys`; classes de entidade, como `ApiKey`, permanecem no singular conforme a convenção do Laravel
 - formato exato e tamanho de cada trecho da chave;
 - se o middleware aceitará abilities, como:
 
 ```php
-Route::middleware('uspdev.api-key:tasks.create');
+Route::middleware('uspdev.api-keys:tasks.create');
 ```
 
 - se `owner_id` aceitará apenas bigint ou também UUID/ULID;

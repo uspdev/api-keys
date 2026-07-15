@@ -1,4 +1,4 @@
-@extends(config('api-key.management.page.layout', 'layouts.app'))
+@extends(config('api-keys.management.page.layout', 'layouts.app'))
 
 @section('title', 'Gerenciamento de API Keys')
 
@@ -6,7 +6,7 @@
   <div class="container py-4">
     <div class="mb-4">
       @if ($ownerAlias !== null)
-        <a href="{{ route('api-key.admin.index') }}" class="small">&larr; Todos os tipos</a>
+        <a href="{{ route('api-keys.admin.index') }}" class="small">&larr; Todos os tipos</a>
       @endif
 
       <h1 class="h3 mb-1">Gerenciamento de API Keys</h1>
@@ -22,13 +22,13 @@
     @if ($ownerAlias === null)
       @if (count($ownerTypes) === 0)
         <div class="alert alert-light border" role="status">
-          Nenhum owner foi registrado em <code>api-key.owners</code>.
+          Nenhum owner foi registrado em <code>api-keys.owners</code>.
         </div>
       @else
         <div class="row">
           @foreach ($ownerTypes as $ownerType)
             <div class="col-md-6 col-lg-4 mb-3">
-              <a href="{{ route('api-key.admin.owners', ['ownerAlias' => $ownerType['alias']]) }}"
+              <a href="{{ route('api-keys.admin.owners', ['ownerAlias' => $ownerType['alias']]) }}"
                 class="card h-100 text-decoration-none">
                 <div class="card-body">
                   <h2 class="h5 text-dark">{{ $ownerType['label'] }}</h2>
@@ -47,7 +47,7 @@
       <div class="list-group">
         @foreach ($owners as $entry)
           @php($owner = $entry['model'])
-          <a href="{{ route('api-key.admin.show', ['ownerAlias' => $ownerAlias, 'owner' => $owner->getRouteKey()]) }}"
+          <a href="{{ route('api-keys.admin.show', ['ownerAlias' => $ownerAlias, 'owner' => $owner->getRouteKey()]) }}"
             class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
             <span>
               <strong>{{ $entry['label'] }}</strong>

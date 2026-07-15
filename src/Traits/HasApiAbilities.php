@@ -1,6 +1,6 @@
 <?php
 
-namespace Uspdev\ApiKey\Traits;
+namespace Uspdev\ApiKeys\Traits;
 
 /** Delega a autorização da API Key às abilities do papel no proprietário. */
 trait HasApiAbilities

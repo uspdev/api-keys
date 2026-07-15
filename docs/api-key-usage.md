@@ -32,7 +32,7 @@ O alias pode ser informado explicitamente quando necessário:
 | Prop | Obrigatória | Descrição |
 | --- | --- | --- |
 | `owner` | Sim | Instância do model que possui as API Keys. |
-| `owner-alias` | Não | Alias registrado em `api-key.owners`. Se omitido, é resolvido pela classe do model. |
+| `owner-alias` | Não | Alias registrado em `api-keys.owners`. Se omitido, é resolvido pela classe do model. |
 
 O componente renderiza a tabela, o modal de criação, o modal de exibição
 única do token e os badges de status. Ele também utiliza as rotas de criação
@@ -59,14 +59,14 @@ A página completa é habilitada por padrão e reutiliza o mesmo componente
 
 | URL padrão | Nome da rota | Função |
 | --- | --- | --- |
-| `/api-keys` | `api-key.admin.index` | Lista os aliases configurados. |
-| `/api-keys/project` | `api-key.admin.owners` | Lista os owners autorizados do alias. |
-| `/api-keys/project/15` | `api-key.admin.show` | Abre o gerenciador do owner. |
+| `/api-keys` | `api-keys.admin.index` | Lista os aliases configurados. |
+| `/api-keys/project` | `api-keys.admin.owners` | Lista os owners autorizados do alias. |
+| `/api-keys/project/15` | `api-keys.admin.show` | Abre o gerenciador do owner. |
 
-O prefixo da URL pode ser alterado em `api-key.prefix`. Por exemplo, com o
+O prefixo da URL pode ser alterado em `api-keys.prefix`. Por exemplo, com o
 prefixo `integrations`, a última URL será `/integrations/project/15`.
 
-A configuração da página fica em `api-key.management.page`:
+A configuração da página fica em `api-keys.management.page`:
 
 ```php
 'management' => [
@@ -102,7 +102,7 @@ Essa integração é opt-in e preserva os itens que já existem em
 `config/usp-theme.php`:
 
 ```php
-// config/api-key.php
+// config/api-keys.php
 'theme' => [
     'menu' => [
         'enabled' => true,
@@ -116,7 +116,7 @@ Essa integração é opt-in e preserva os itens que já existem em
 ```
 
 O item será adicionado a `usp-theme.menu` durante o boot do package. Se `url`
-for `null`, o valor de `api-key.prefix` será usado. Para remover o link,
+for `null`, o valor de `api-keys.prefix` será usado. Para remover o link,
 mantenha `enabled` como `false`.
 
 Use `can` somente com uma ability global reconhecida pelo theme. Como

@@ -1,12 +1,12 @@
 <?php
 
-namespace Uspdev\ApiKey\Http\Middleware;
+namespace Uspdev\ApiKeys\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Uspdev\ApiKey\Contracts\ApiKeyManager;
+use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 
 /** Autentica uma API Key recebida e a anexa à requisição. */
 class AuthenticateApiKey
@@ -22,8 +22,8 @@ class AuthenticateApiKey
         $token = $request->bearerToken();
 
         /** Permite o fallback menos seguro por query string apenas quando habilitado. */
-        if (! $token && config('api-key.query_parameter.enabled', false)) {
-            $parameter = (string) config('api-key.query_parameter.name', 'api_key');
+        if (! $token && config('api-keys.query_parameter.enabled', false)) {
+            $parameter = (string) config('api-keys.query_parameter.name', 'api_key');
             $token = $request->query($parameter);
         }
 
@@ -37,7 +37,7 @@ class AuthenticateApiKey
             return $this->unauthenticatedResponse();
         }
 
-        $attribute = (string) config('api-key.middleware.request_attribute', 'apiKey');
+        $attribute = (string) config('api-keys.middleware.request_attribute', 'apiKey');
         $request->attributes->set($attribute, $apiKey);
 
         return $next($request);
