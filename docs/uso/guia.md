@@ -132,5 +132,9 @@ A aplicação deve verificar a ability necessária:
 abort_unless($apiKey->allows('tasks.read'), 403);
 ```
 
+`ApiKey::allows()` é a API pública de autorização. O método
+`Project::abilities()` apenas declara as permissões de cada papel e não deve
+ser consultado diretamente pelo controller.
+
 O middleware autentica a chave, mas não substitui o usuário da sessão e não
 autoriza automaticamente as operações de negócio.

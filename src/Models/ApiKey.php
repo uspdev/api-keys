@@ -71,7 +71,7 @@ class ApiKey extends Model
         return ! $this->isRevoked() && ! $this->isExpired();
     }
 
-    /** Delega a verificação de ability ao proprietário desta credencial. */
+    /** Verifica uma ability pela API pública de autorização da credencial. */
     public function allows(string $ability): bool
     {
         $owner = $this->owner;
@@ -80,16 +80,10 @@ class ApiKey extends Model
             return false;
         }
 
-        /** Prioriza a API de autorização da trait do proprietário quando disponível. */
-        if (method_exists($owner, 'allowsApiAbility')) {
-            return $owner->allowsApiAbility($this->role, $ability);
-        }
-
         if (! method_exists($owner, 'abilities')) {
             return false;
         }
 
-        /** Mantém compatibilidade com owners que implementam apenas abilities(). */
         $abilities = $owner->abilities($this->role);
 
         return in_array('*', $abilities, true) || in_array($ability, $abilities, true);

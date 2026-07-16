@@ -83,12 +83,23 @@ Route::middleware('uspdevApiKeys')->group(function () {
 });
 ```
 
-Injeta `uspdevApiKeys` no request()
+O middleware autentica a credencial, verifica expiração e revogação, atualiza
+os metadados de uso e injeta a instância de `ApiKey` no request:
 
 ```php
-request()->attributes->set('apiKey', $apiKey);
+$apiKey = request()->attributes->get('apiKey');
 ```
 
+Ele não recebe abilities como parâmetro e não autoriza operações de negócio.
+A aplicação hospedeira deve consultar a ability necessária depois da
+autenticação:
+
+```php
+abort_unless($apiKey->allows('tasks.create'), 403);
+```
+
+Assim, uma falha de autenticação retorna HTTP 401, enquanto uma chave válida
+sem a ability exigida normalmente resulta em HTTP 403.
 
 ## 📡 Endpoints de Exemplo
 
@@ -248,9 +259,12 @@ Cada API Key possui apenas um **papel** (`role`), enquanto as permissões efetiv
 
 Essa abordagem evita duplicação de regras e garante que qualquer alteração nas permissões do sistema seja refletida automaticamente em todas as API Keys.
 
-## Trait `HasApiAbilities`
+## Contrato de abilities do owner
 
-Para que um modelo possa ser utilizado como proprietário de API Keys, ele deve utilizar a trait `HasApiAbilities` e implementar o método `abilities()`.
+O owner utiliza a trait `HasApiAbilities` e implementa `abilities()` para
+declarar quais abilities cada papel concede. Esse método define o mapa de
+permissões; ele não é o ponto de entrada recomendado para autorizar uma
+requisição.
 
 ```php
 use Uspdev\ApiKeys\Traits\HasApiAbilities;
@@ -285,16 +299,53 @@ class Project extends Model
             default => [],
         };
     }
-    
-    public function authorize(string $role, string $ability): bool;
 }
+```
+
+O wildcard `*` concede todas as abilities ao papel. Um papel desconhecido deve
+retornar um array vazio.
+
+## API pública de autorização
+
+Depois que o middleware autenticar a credencial, a aplicação deve usar
+`ApiKey::allows()` como API pública única para verificar uma operação:
+
+```php
+$apiKey = request()->attributes->get('apiKey');
+
+abort_unless($apiKey->allows('tasks.create'), 403);
+```
+
+`ApiKey::allows()` utiliza o `role` armazenado na chave, solicita ao owner o
+array retornado por `abilities()` e verifica a ability, incluindo o wildcard
+`*`. A aplicação não precisa passar o papel manualmente nem consultar esse
+array diretamente.
+
+Não existem APIs alternativas como `allowsApiAbility()` ou `authorize()`. Essa
+separação mantém uma responsabilidade clara para cada método:
+
+```text
+Owner::abilities($role)   define as abilities do papel
+ApiKey::allows($ability)  verifica a ability da credencial autenticada
 ```
 
 ## Fluxo de autorização
 
-Quando uma requisição autenticada é recebida, a biblioteca executa o seguinte fluxo:
+Quando uma requisição autenticada é recebida, o fluxo fica dividido entre o
+package e a aplicação hospedeira:
 
 ```text
+Middleware uspdevApiKeys
+    │
+    ├── autentica a credencial
+    └── injeta ApiKey no request
+            │
+            ▼
+Aplicação hospedeira
+    │
+    └── $apiKey->allows('tasks.create')
+            │
+            ▼
 API Key
     │
     ├── owner_type
@@ -320,13 +371,14 @@ Por exemplo, suponha uma API Key com:
 role = collaborator
 ```
 
-Ao tentar criar uma tarefa, a biblioteca consultará o objeto proprietário:
+Ao tentar criar uma tarefa, a aplicação consulta a própria credencial:
 
 ```php
-$project->abilities('collaborator');
+$apiKey->allows('tasks.create');
 ```
 
-Resultado:
+Internamente, a credencial resolve o owner e consulta as abilities do papel
+`collaborator`:
 
 ```php
 [
@@ -336,7 +388,9 @@ Resultado:
 ]
 ```
 
-Como a permissão `tasks.create` está presente, a operação será autorizada.
+Como `tasks.create` está presente, `allows()` retorna `true`. Se a ability não
+estiver presente, o método retorna `false` e a aplicação decide a resposta
+adequada, normalmente HTTP 403.
 
 ## Vantagens
 
@@ -363,18 +417,25 @@ Cada aplicação é livre para mapear esses papéis para as permissões que dese
 ## Exemplo completo
 
 ```php
-$apiKey = ApiKey::authenticate($token);
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-$project = $apiKey->owner;
+public function store(Request $request): JsonResponse
+{
+    $apiKey = $request->attributes->get('apiKey');
 
-if (! in_array('tasks.create', $project->abilities($apiKey->role))) {
-    abort(403);
+    abort_unless($apiKey->allows('tasks.create'), Response::HTTP_FORBIDDEN);
+
+    // A criação da tarefa pertence à aplicação hospedeira.
+
+    return response()->json(['message' => 'Tarefa criada.'], Response::HTTP_CREATED);
 }
-
-// usuário autorizado
 ```
 
-Dessa forma, a biblioteca é responsável apenas pela autenticação da API Key e pela identificação do objeto proprietário. A definição das permissões permanece sob responsabilidade da aplicação hospedeira, garantindo flexibilidade e baixo acoplamento.
+Dessa forma, o package fornece o mecanismo genérico de consulta por
+`ApiKey::allows()`, enquanto o owner continua sendo a fonte de verdade das
+abilities e a aplicação hospedeira decide quais operações exigem cada ability.
 
 
 # Exemplo de Consumo da API
@@ -471,9 +532,6 @@ Uma chave destinada ao consumo por Inteligência Artificial (`purpose = "ai"`) n
   "role": "viewer",
 }
 ```
-
-
-
 
 
 

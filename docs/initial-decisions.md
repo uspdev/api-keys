@@ -247,10 +247,17 @@ da aplicação hospedeira. O owner fornece as abilities correspondentes
 ao papel:
 
 ```php
-if (! $owner->allowsApiAbility($role, 'tasks.create')) {
+$apiKey = request()->attributes->get('apiKey');
+
+if (! $apiKey->allows('tasks.create')) {
     abort(403);
 }
 ```
+
+`ApiKey::allows()` é a API pública recomendada para a autorização de negócio.
+O owner implementa `abilities(string $role)` para fornecer o mapa de
+permissões. Não existem métodos alternativos como `allowsApiAbility()` ou
+`authorize()`.
 
 A interface de gerenciamento das API Keys também deve respeitar o
 sistema de autorização da aplicação hospedeira. O mecanismo concreto
@@ -449,18 +456,21 @@ src/Providers/
 
 ---
 
+## Decisões fechadas sobre autenticação e autorização
+
+- O middleware autentica a credencial e não aceita abilities como parâmetro.
+- A aplicação hospedeira verifica as operações de negócio com
+  `$apiKey->allows($ability)`.
+- O owner implementa `abilities(string $role)` como fonte de verdade do mapa de
+  permissões.
+- `allowsApiAbility()` e `authorize()` não fazem parte da API do package.
+
 ## Pontos ainda pendentes de definição
 
 Ainda precisam ser fechados durante o desenvolvimento:
 
 - namespace do package no plural: `Uspdev\\ApiKeys`; classes de entidade, como `ApiKey`, permanecem no singular conforme a convenção do Laravel
 - formato exato e tamanho de cada trecho da chave;
-- se o middleware aceitará abilities, como:
-
-```php
-Route::middleware('uspdev.api-keys:tasks.create');
-```
-
 - se `owner_id` aceitará apenas bigint ou também UUID/ULID;
 - se a auditoria será somente agregada ou terá histórico por requisição;
 - se autenticação por query string será suportada.
