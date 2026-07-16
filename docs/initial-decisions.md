@@ -303,16 +303,16 @@ O alias `project` será convertido para a classe permitida pela configuração.
 
 ## Segurança da credencial
 
-O formato definitivo ainda precisa ser padronizado, mas seguirá a ideia:
+O formato padronizado da credencial é:
 
 ```text
-gpp_v1_<prefixo>.<segredo>
+gpp_<prefixo>.<segredo>
 ```
 
 Exemplo:
 
 ```text
-gpp_v1_8H4KQ2M9.WKQ2zGd6KxF9u8rP1M...
+gpp_8H4KQ2M9.WKQ2zGd6KxF9u8rP1M...
 ```
 
 O banco armazenará:
@@ -470,7 +470,7 @@ src/Providers/
 Ainda precisam ser fechados durante o desenvolvimento:
 
 - namespace do package no plural: `Uspdev\\ApiKeys`; classes de entidade, como `ApiKey`, permanecem no singular conforme a convenção do Laravel
-- formato exato e tamanho de cada trecho da chave;
+- tamanho configurável de cada trecho da chave;
 - se `owner_id` aceitará apenas bigint ou também UUID/ULID;
 - se a auditoria será somente agregada ou terá histórico por requisição;
 - se autenticação por query string será suportada.

@@ -23,7 +23,7 @@
             <td>
               <div class="font-weight-bold">{{ $apiKey->name }}</div>
               <small class="text-muted">
-                {{ config('api-keys.credential_prefix', 'gpp') }}_{{ config('api-keys.credential_version', 'v1') }}_{{ $apiKey->prefix }}
+                {{ config('api-keys.credential_prefix', 'gpp') }}_{{ $apiKey->prefix }}
               </small>
             </td>
             <td>{{ $purposes[$apiKey->purpose] ?? ucfirst($apiKey->purpose) }}</td>

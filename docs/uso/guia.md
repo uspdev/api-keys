@@ -117,7 +117,7 @@ Route::middleware('uspdevApiKeys')
 O cliente envia a credencial no header:
 
 ```http
-Authorization: Bearer gpp_v1_ABC123.segredo
+Authorization: Bearer gpp_ABC123.segredo
 ```
 
 Após a autenticação, a API Key fica disponível em:

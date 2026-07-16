@@ -41,10 +41,6 @@ class ApiKeyService implements ApiKeyManager
             'api-keys.credential_prefix',
             'gpp'
         );
-        $credentialVersion = (string) $this->config->get(
-            'api-keys.credential_version',
-            'v1'
-        );
 
         /** Repete a alocação caso ocorra uma colisão de prefixo após a consulta. */
         for ($attempt = 0; $attempt < 10; $attempt++) {
@@ -77,7 +73,7 @@ class ApiKeyService implements ApiKeyManager
 
             return new CreatedApiKeyDto(
                 $apiKey,
-                sprintf('%s_%s_%s.%s', $credentialPrefix, $credentialVersion, $publicPrefix, $secret),
+                sprintf('%s_%s.%s', $credentialPrefix, $publicPrefix, $secret),
             );
         }
 
@@ -179,11 +175,7 @@ class ApiKeyService implements ApiKeyManager
             'api-keys.credential_prefix',
             'gpp'
         );
-        $credentialVersion = (string) $this->config->get(
-            'api-keys.credential_version',
-            'v1'
-        );
-        $start = $credentialPrefix . '_' . $credentialVersion . '_';
+        $start = $credentialPrefix . '_';
 
         if (! str_starts_with($token, $start)) {
             return null;

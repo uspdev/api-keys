@@ -49,9 +49,8 @@ return [
     'prefix' => 'api-keys',
 
     // Formato público da credencial.
-    // Exemplo: gpp_v1_4Y7KQ2.segredo
+    // Exemplo: gpp_4Y7KQ2.segredo
     'credential_prefix' => env('API_KEYS_CREDENTIAL_PREFIX', 'gpp'),
-    'credential_version' => env('API_KEYS_CREDENTIAL_VERSION', 'v1'),
 
     // Tamanho do identificador público e do segredo da credencial.
     'public_prefix_length' => (int) env('API_KEYS_PUBLIC_PREFIX_LENGTH', 6),

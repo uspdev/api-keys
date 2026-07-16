@@ -70,7 +70,6 @@ e `revoked_by` sejam registrados.
 | `API_KEYS_MANAGEMENT_PAGE_ENABLED` | `true` | Habilita a página administrativa pronta. |
 | `API_KEYS_MANAGEMENT_LAYOUT` | `layouts.app` | View de layout da página administrativa. |
 | `API_KEYS_CREDENTIAL_PREFIX` | `gpp` | Prefixo público da credencial. |
-| `API_KEYS_CREDENTIAL_VERSION` | `v1` | Versão do formato da credencial. |
 | `API_KEYS_PUBLIC_PREFIX_LENGTH` | `6` | Tamanho do prefixo público. |
 | `API_KEYS_SECRET_BYTES` | `32` | Quantidade mínima de bytes do segredo. |
 | `API_KEYS_MIDDLEWARE_ALIAS` | `uspdevApiKeys` | Alias registrado para o middleware. |

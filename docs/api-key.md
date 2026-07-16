@@ -106,8 +106,8 @@ sem a ability exigida normalmente resulta em HTTP 403.
 
 As chaves devem ser enviadas via Header ou, em casos excepcionais de ferramentas limitadas, via Query String:
 
-- **Header:** `Authorization: Bearer gpp_xxx`
-- **Query:** `?api_key=gpp_xxx`
+- **Header:** `Authorization: Bearer gpp_4Y7KQ2.segredo`
+- **Query:** `?api_key=gpp_4Y7KQ2.segredo`
 
 ### Rotas
 
@@ -215,7 +215,7 @@ Por motivos de segurança, a chave é apresentada **uma única vez** imediatamen
 ```
 API Key criada com sucesso
 
-gpp_v1_8H4K...Y7P2
+gpp_8H4KQ2.Y7P2...
 
 ⚠️ Esta chave será exibida apenas uma vez.
 ```
@@ -449,7 +449,7 @@ A seguir é apresentado um exemplo de criação de uma tarefa utilizando uma API
 ```http
 POST /api/projects/15/tasks HTTP/1.1
 Host: projetos.exemplo.br
-Authorization: Bearer gpp_v1_8H4KQ2.WKQ2zGd6KxF9u8rP1M...
+Authorization: Bearer gpp_8H4KQ2.WKQ2zGd6KxF9u8rP1M...
 Content-Type: application/json
 ```
 
@@ -495,7 +495,7 @@ Content-Type: application/json
 
 ```bash
 curl -X POST https://projetos.exemplo.br/api/projects/15/tasks \
-  -H "Authorization: Bearer gpp_v1_8H4KQ2.WKQ2zGd6KxF9u8rP1M..." \
+  -H "Authorization: Bearer gpp_8H4KQ2.WKQ2zGd6KxF9u8rP1M..." \
   -H "Content-Type: application/json" \
   -d '{
         "title":"Implementar autenticação OAuth",
