@@ -127,8 +127,9 @@ view e as seções usadas pelas páginas:
 O package fornece apenas o conteúdo administrativo e utiliza classes
 compatíveis com o Bootstrap/theme da aplicação.
 
-Para ativar a paginação e a busca, a aplicação que usa o `laravel-usp-theme`
-deve incluir o bloco no próprio layout:
+As páginas administrativas prontas carregam o bloco automaticamente quando o
+`laravel-usp-theme` está instalado. Ao incorporar apenas o componente
+`<x-api-keys::manager>` em uma página da aplicação, inclua o bloco no layout:
 
 ```blade
 @extends('laravel-usp-theme::master')

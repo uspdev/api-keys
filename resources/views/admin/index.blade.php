@@ -1,5 +1,7 @@
 @extends(config('api-keys.management.page.layout', 'layouts.app'))
 
+@includeIf('laravel-usp-theme::blocos.datatable-simples')
+
 @section('title', 'Gerenciamento de API Keys')
 
 @section('content')
