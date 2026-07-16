@@ -35,6 +35,11 @@ O `manager` reúne os seguintes recursos:
 - ação de revogação;
 - ação de renovação para chaves ativas.
 
+Quando a aplicação ativa o bloco `datatable-simples` do `laravel-usp-theme`, a
+tabela recebe busca, ordenação, responsividade e paginação de 10 registros no
+navegador. Sem o bloco, ela permanece disponível como uma tabela HTML
+responsiva, sem paginação automática.
+
 ## Componentes internos
 
 | View | Responsabilidade |
@@ -121,3 +126,16 @@ view e as seções usadas pelas páginas:
 
 O package fornece apenas o conteúdo administrativo e utiliza classes
 compatíveis com o Bootstrap/theme da aplicação.
+
+Para ativar a paginação e a busca, a aplicação que usa o `laravel-usp-theme`
+deve incluir o bloco no próprio layout:
+
+```blade
+@extends('laravel-usp-theme::master')
+
+@include('laravel-usp-theme::blocos.datatable-simples')
+```
+
+A página de owners e a tabela de API Keys utilizam paginação local de 10
+registros. Todos os registros continuam sendo carregados pelo Laravel; não há
+paginação de consulta ao banco.

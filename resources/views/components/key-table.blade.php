@@ -4,7 +4,7 @@
   </div>
 @else
   <div class="table-responsive">
-    <table class="table table-hover align-middle">
+    <table class="table table-striped table-bordered table-hover align-middle datatable-simples dt-paging-10 responsive">
       <caption class="sr-only">API Keys vinculadas ao recurso</caption>
       <thead>
         <tr>

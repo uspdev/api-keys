@@ -44,18 +44,32 @@
         Nenhum recurso disponível para administração.
       </div>
     @else
-      <div class="list-group">
-        @foreach ($owners as $entry)
-          @php($owner = $entry['model'])
-          <a href="{{ route('api-keys.admin.show', ['ownerAlias' => $ownerAlias, 'owner' => $owner->getRouteKey()]) }}"
-            class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-            <span>
-              <strong>{{ $entry['label'] }}</strong>
-              <small class="d-block text-muted">{{ $owner->getRouteKey() }}</small>
-            </span>
-            <span aria-hidden="true">&rarr;</span>
-          </a>
-        @endforeach
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover datatable-simples dt-paging-10 responsive">
+          <caption class="sr-only">Recursos disponíveis para administração de API Keys</caption>
+          <thead>
+            <tr>
+              <th scope="col">Recurso</th>
+              <th scope="col">Identificador</th>
+              <th scope="col" class="text-right">Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach ($owners as $entry)
+              @php($owner = $entry['model'])
+              <tr>
+                <td>{{ $entry['label'] }}</td>
+                <td>{{ $owner->getRouteKey() }}</td>
+                <td class="text-right">
+                  <a href="{{ route('api-keys.admin.show', ['ownerAlias' => $ownerAlias, 'owner' => $owner->getRouteKey()]) }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Gerenciar
+                  </a>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
       </div>
     @endif
   </div>
