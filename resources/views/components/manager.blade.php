@@ -47,12 +47,6 @@
     </button>
   </div>
 
-  @if (session('api-keys.message'))
-    <div class="alert alert-success" role="status">
-      {{ session('api-keys.message') }}
-    </div>
-  @endif
-
   @include('api-keys::components.key-table', [
       'apiKeys' => $apiKeys,
       'owner' => $owner,
@@ -83,15 +77,6 @@
     [data-api-keys-manager] .api-keys-action-button {
       margin: 0;
       width: 100%;
-    }
-
-    [data-api-keys-manager] summary.api-keys-action-button {
-      display: block;
-      list-style: none;
-    }
-
-    [data-api-keys-manager] summary.api-keys-action-button::-webkit-details-marker {
-      display: none;
     }
 
     [data-api-keys-manager] .api-keys-secret-value {
