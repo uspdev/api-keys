@@ -19,6 +19,30 @@
       </thead>
       <tbody>
         @foreach ($apiKeys as $apiKey)
+          {{-- Mantém no botão somente os dados necessários para preencher o modal único. --}}
+          @php
+            $apiKeyStatus = $apiKey->isRevoked()
+                ? ['label' => 'Revogada', 'class' => 'badge-danger']
+                : ($apiKey->isExpired()
+                    ? ['label' => 'Expirada', 'class' => 'badge-warning']
+                    : ['label' => 'Ativa', 'class' => 'badge-success']);
+            $apiKeyDetails = [
+                'name' => $apiKey->name,
+                'prefix' => config('api-keys.credential_prefix', 'gpp') . '_' . $apiKey->prefix,
+                'status' => $apiKeyStatus['label'],
+                'status_class' => $apiKeyStatus['class'],
+                'purpose' => $purposes[$apiKey->purpose] ?? ucfirst($apiKey->purpose),
+                'role' => $roles[$apiKey->role] ?? ucfirst($apiKey->role),
+                'created_at' => $apiKey->created_at?->format('d/m/Y H:i') ?? '—',
+                'expires_at' => $apiKey->expires_at?->format('d/m/Y H:i') ?? 'Nunca',
+                'last_used_at' => $apiKey->last_used_at?->format('d/m/Y H:i') ?? 'Nunca',
+                'last_used_ip' => $apiKey->last_used_ip ?? '—',
+                'access_count' => number_format($apiKey->access_count),
+                'created_by' => $apiKey->created_by,
+                'revoked_at' => $apiKey->revoked_at?->format('d/m/Y H:i'),
+                'revoked_by' => $apiKey->revoked_by,
+            ];
+          @endphp
           <tr>
             <td>
               <div class="font-weight-bold">{{ $apiKey->name }}</div>
@@ -28,7 +52,7 @@
             </td>
             <td>{{ $purposes[$apiKey->purpose] ?? ucfirst($apiKey->purpose) }}</td>
             <td>{{ $roles[$apiKey->role] ?? ucfirst($apiKey->role) }}</td>
-            <td>@include('api-keys::components.status-badge', ['apiKey' => $apiKey])</td>
+            <td>@include('api-keys::components.status-badge', ['apiKey' => $apiKey, 'status' => $apiKeyStatus])</td>
             <td>
               @if ($apiKey->last_used_at)
                 <span title="{{ $apiKey->last_used_at->format('d/m/Y H:i:s') }}">
@@ -42,7 +66,7 @@
             <td class="text-right">
               <div class="api-keys-actions">
                 <button type="button" class="btn btn-sm btn-outline-secondary api-keys-action-button"
-                  data-api-keys-open="details-{{ $apiKey->getKey() }}">
+                  data-api-keys-open="details" data-api-keys-details='@json($apiKeyDetails)'>
                   Detalhes
                 </button>
 
@@ -67,7 +91,5 @@
     </table>
   </div>
 
-  @foreach ($apiKeys as $apiKey)
-    @include('api-keys::components.details-modal', ['apiKey' => $apiKey])
-  @endforeach
+  @include('api-keys::components.details-modal')
 @endif

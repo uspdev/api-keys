@@ -1,10 +1,7 @@
-@php
-  $detailsModalName = 'details-' . $apiKey->getKey();
-  $detailsModalId = $componentId . '-' . $detailsModalName;
-@endphp
+@php($detailsModalId = $componentId . '-details')
 
 <div id="{{ $detailsModalId }}" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
-  aria-labelledby="{{ $detailsModalId }}-title" data-api-keys-modal="{{ $detailsModalName }}" style="display: none;">
+  aria-labelledby="{{ $detailsModalId }}-title" data-api-keys-modal="details" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -16,49 +13,43 @@
 
       <div class="modal-body">
         <div class="mb-3">
-          <div class="font-weight-bold">{{ $apiKey->name }}</div>
-          <code>{{ config('api-keys.credential_prefix', 'gpp') }}_{{ $apiKey->prefix }}</code>
+          <div class="font-weight-bold" data-api-keys-detail="name"></div>
+          <code data-api-keys-detail="prefix"></code>
         </div>
 
         <dl class="row mb-0">
           <dt class="col-sm-5">Status</dt>
-          <dd class="col-sm-7">@include('api-keys::components.status-badge', ['apiKey' => $apiKey])</dd>
+          <dd class="col-sm-7"><span class="badge" data-api-keys-detail="status"></span></dd>
 
           <dt class="col-sm-5">Tipo</dt>
-          <dd class="col-sm-7">{{ $purposes[$apiKey->purpose] ?? ucfirst($apiKey->purpose) }}</dd>
+          <dd class="col-sm-7" data-api-keys-detail="purpose"></dd>
 
           <dt class="col-sm-5">Papel</dt>
-          <dd class="col-sm-7">{{ $roles[$apiKey->role] ?? ucfirst($apiKey->role) }}</dd>
+          <dd class="col-sm-7" data-api-keys-detail="role"></dd>
 
           <dt class="col-sm-5">Criada em</dt>
-          <dd class="col-sm-7">{{ $apiKey->created_at?->format('d/m/Y H:i') ?? '—' }}</dd>
+          <dd class="col-sm-7" data-api-keys-detail="created_at"></dd>
 
           <dt class="col-sm-5">Expiração</dt>
-          <dd class="col-sm-7">{{ $apiKey->expires_at?->format('d/m/Y H:i') ?? 'Nunca' }}</dd>
+          <dd class="col-sm-7" data-api-keys-detail="expires_at"></dd>
 
           <dt class="col-sm-5">Último uso</dt>
-          <dd class="col-sm-7">{{ $apiKey->last_used_at?->format('d/m/Y H:i') ?? 'Nunca' }}</dd>
+          <dd class="col-sm-7" data-api-keys-detail="last_used_at"></dd>
 
           <dt class="col-sm-5">Último IP</dt>
-          <dd class="col-sm-7">{{ $apiKey->last_used_ip ?? '—' }}</dd>
+          <dd class="col-sm-7" data-api-keys-detail="last_used_ip"></dd>
 
           <dt class="col-sm-5">Acessos</dt>
-          <dd class="col-sm-7">{{ number_format($apiKey->access_count) }}</dd>
+          <dd class="col-sm-7" data-api-keys-detail="access_count"></dd>
 
-          @if ($apiKey->created_by !== null)
-            <dt class="col-sm-5">Criada pelo usuário ID</dt>
-            <dd class="col-sm-7">{{ $apiKey->created_by }}</dd>
-          @endif
+          <dt class="col-sm-5" data-api-keys-detail-row="created_by">Criada pelo usuário ID</dt>
+          <dd class="col-sm-7" data-api-keys-detail="created_by" data-api-keys-detail-row="created_by"></dd>
 
-          @if ($apiKey->revoked_at)
-            <dt class="col-sm-5">Revogada em</dt>
-            <dd class="col-sm-7">{{ $apiKey->revoked_at->format('d/m/Y H:i') }}</dd>
-          @endif
+          <dt class="col-sm-5" data-api-keys-detail-row="revoked_at">Revogada em</dt>
+          <dd class="col-sm-7" data-api-keys-detail="revoked_at" data-api-keys-detail-row="revoked_at"></dd>
 
-          @if ($apiKey->revoked_by !== null)
-            <dt class="col-sm-5">Revogada pelo usuário ID</dt>
-            <dd class="col-sm-7">{{ $apiKey->revoked_by }}</dd>
-          @endif
+          <dt class="col-sm-5" data-api-keys-detail-row="revoked_by">Revogada pelo usuário ID</dt>
+          <dd class="col-sm-7" data-api-keys-detail="revoked_by" data-api-keys-detail-row="revoked_by"></dd>
         </dl>
       </div>
 

@@ -149,9 +149,33 @@
       document.body.classList.add('modal-open');
     };
 
+    // Atualiza o modal compartilhado antes de exibir a chave selecionada.
+    const fillDetailsModal = (modal, details) => {
+      modal.querySelectorAll('[data-api-keys-detail]').forEach((element) => {
+        const field = element.dataset.apiKeysDetail;
+        element.textContent = details[field] ?? '';
+      });
+
+      const status = modal.querySelector('[data-api-keys-detail="status"]');
+
+      if (status) {
+        status.className = `badge ${details.status_class ?? ''}`;
+      }
+
+      modal.querySelectorAll('[data-api-keys-detail-row]').forEach((element) => {
+        const field = element.dataset.apiKeysDetailRow;
+        element.hidden = details[field] === null || details[field] === undefined;
+      });
+    };
+
     manager.querySelectorAll('[data-api-keys-open]').forEach((button) => {
       button.addEventListener('click', () => {
         const modal = manager.querySelector(`[data-api-keys-modal="${button.dataset.apiKeysOpen}"]`);
+
+        if (modal && button.dataset.apiKeysDetails) {
+          fillDetailsModal(modal, JSON.parse(button.dataset.apiKeysDetails));
+        }
+
         openModal(modal);
       });
     });
