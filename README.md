@@ -10,7 +10,7 @@ Este componente provê uma infraestrutura robusta e segura para a gestão de cha
 - **Controle de Acesso:** Permissões baseadas em papéis (RBAC) herdadas diretamente do projeto.
 - **Rastreabilidade:** Monitoramento de contagem de acessos e data do último uso.
 
-## Installation
+## Instalação
 
 ### 1. **Instale a biblioteca pelo Composer**
 
