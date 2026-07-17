@@ -105,15 +105,15 @@ O middleware:
 Falhas de autenticação retornam HTTP 401. A ausência de uma ability deve ser
 tratada pela aplicação e normalmente retorna HTTP 403.
 
-## Rotas administrativas do package
+## Rotas de gerenciamento do package
 
-O package carrega automaticamente suas próprias rotas administrativas:
+O package carrega automaticamente suas próprias rotas de gerenciamento:
 
 | URL padrão | Nome da rota | Função |
 | --- | --- | --- |
-| `/api-keys` | `api-keys.admin.index` | Lista aliases registrados. |
-| `/api-keys/{ownerAlias}` | `api-keys.admin.owners` | Lista owners autorizados. |
-| `/api-keys/{ownerAlias}/{owner}` | `api-keys.admin.show` | Exibe o gerenciador do owner. |
+| `/api-keys` | `api-keys.management.index` | Lista aliases registrados. |
+| `/api-keys/{ownerAlias}` | `api-keys.management.owners` | Lista owners autorizados. |
+| `/api-keys/{ownerAlias}/{owner}` | `api-keys.management.show` | Exibe o gerenciador do owner. |
 | `/api-keys/{ownerAlias}/{owner}/keys` | `api-keys.keys.store` | Cria uma API Key. |
 | `/api-keys/{ownerAlias}/{owner}/keys/{apiKey}/revoke` | `api-keys.keys.revoke` | Revoga uma API Key. |
 | `/api-keys/{ownerAlias}/{owner}/keys/{apiKey}/renew` | `api-keys.keys.renew` | Cria uma nova chave e revoga a anterior. |
@@ -123,7 +123,7 @@ e a ability configurada em `api-keys.management.ability`.
 
 ## Identificador do criador
 
-Na interface administrativa, `created_by` recebe o `codpes` da USP retornado
+Na interface de gerenciamento, `created_by` recebe o `codpes` da USP retornado
 por `getAuthIdentifier()` pelo usuário autenticado. O package armazena esse
 valor como metadado numérico e não cria relacionamento com o model de usuário.
 

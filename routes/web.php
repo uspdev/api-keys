@@ -9,16 +9,16 @@ Route::group([
 ], function (): void {
     if ((bool) config('api-keys.management.page.enabled', true)) {
         Route::get('/', [ApiKeyController::class, 'index'])
-            ->name('api-keys.admin.index');
+            ->name('api-keys.management.index');
 
         Route::get('{ownerAlias}', [ApiKeyController::class, 'owners'])
             ->where('ownerAlias', '[A-Za-z0-9_-]+')
-            ->name('api-keys.admin.owners');
+            ->name('api-keys.management.owners');
 
         Route::get('{ownerAlias}/{owner}', [ApiKeyController::class, 'show'])
             ->where('ownerAlias', '[A-Za-z0-9_-]+')
             ->where('owner', '[^/]+')
-            ->name('api-keys.admin.show');
+            ->name('api-keys.management.show');
     }
 
     Route::post('{ownerAlias}/{owner}/keys', [ApiKeyController::class, 'store'])

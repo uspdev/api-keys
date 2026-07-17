@@ -62,7 +62,7 @@ O model deve utilizar `HasApiKeys`. Depois, incorpore o gerenciador na página d
 
 O package fornece a tabela, criação, exibição única do token e revogação. As rotas dessas ações usam o prefixo configurado em `api-keys.prefix` e os middlewares configurados em `api-keys.management`, seguindo o padrão dos packages USPdev.
 
-As rotas administrativas usam `web` e `auth` por padrão e exigem a ability
+As rotas de gerenciamento usam `web` e `auth` por padrão e exigem a ability
 `manageApiKeys` no usuário logado para o owner. A aplicação pode ajustar o
 middleware e o nome da ability em `api-keys.management`.
 
@@ -72,7 +72,7 @@ transação e exibe o novo token uma única vez. Registros revogados permanecem
 visíveis, sem exclusão ou soft delete; `revoked_by` registra o identificador
 numérico do usuário responsável.
 
-### Página administrativa opcional
+### Página de gerenciamento opcional
 
 O package também fornece uma página completa que reutiliza o mesmo componente
 Blade do gerenciador:
@@ -114,7 +114,6 @@ Para adicionar automaticamente a página ao menu principal configurado em
         'item' => [
             'text' => '<i class="fas fa-key"></i> API Keys',
             'url' => 'api-keys',
-            'can' => 'admin',
         ],
     ],
 ],
@@ -126,9 +125,10 @@ Quando `url` não for informado, o package utiliza o valor de
 desabilitada por padrão e só funciona quando o theme disponibiliza essa
 configuração.
 
-O campo `can` é opcional e deve usar uma ability global da aplicação, como
-`admin`. A ability `manageApiKeys` normalmente depende de um owner específico
-e, por isso, não deve ser usada diretamente no item global da navbar.
+O campo `can` é opcional e pode usar uma ability global da aplicação quando o
+item precisar ser ocultado de parte dos usuários. A ability `manageApiKeys`
+normalmente depende de um owner específico e, por isso, não deve ser usada
+diretamente no item global da navbar.
 
 ## Contribuições
 

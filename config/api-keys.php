@@ -45,7 +45,7 @@ return [
     // Exemplo: 'project' => App\\Models\\Project::class,
     'owners' => [],
 
-    // Prefixo das rotas administrativas fornecidas pelo package.
+    // Prefixo das rotas de gerenciamento fornecidas pelo package.
     'prefix' => 'api-keys',
 
     // Formato público da credencial.
@@ -72,7 +72,7 @@ return [
         'name' => env('API_KEYS_QUERY_PARAMETER_NAME', 'api_key'),
     ],
 
-    // Rotas e autorização da interface administrativa do package.
+    // Rotas e autorização da interface de gerenciamento do package.
     'management' => [
         'middleware' => $middleware,
         'ability' => 'manageApiKeys',

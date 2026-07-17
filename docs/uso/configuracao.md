@@ -12,7 +12,7 @@ mantidos quando forem adequados.
 
 ## Owners
 
-Registre os aliases permitidos pela interface administrativa:
+Registre os aliases permitidos pela interface de gerenciamento:
 
 ```php
 'owners' => [
@@ -45,7 +45,7 @@ Os valores de `purpose` e `role` são definidos pela aplicação hospedeira:
 O package persiste esses valores como strings. A aplicação define o
 significado deles e o mapeamento para suas permissions.
 
-O ciclo administrativo não exige configuração adicional: a interface usa a
+O ciclo de gerenciamento não exige configuração adicional: a interface usa a
 ability de `api-keys.management.ability` para criar, renovar e revogar. O
 usuário autenticado deve fornecer um identificador numérico para que `created_by`
 e `revoked_by` sejam registrados.
@@ -54,11 +54,11 @@ e `revoked_by` sejam registrados.
 
 | Chave | Padrão | Uso |
 | --- | --- | --- |
-| `api-keys.prefix` | `api-keys` | Prefixo das rotas administrativas. |
+| `api-keys.prefix` | `api-keys` | Prefixo das rotas de gerenciamento. |
 | `api-keys.owners` | `[]` | Aliases e classes dos owners permitidos. |
-| `api-keys.management.middleware` | `['web', 'auth']` | Middleware da interface administrativa. |
-| `api-keys.management.ability` | `manageApiKeys` | Ability exigida para administrar um owner. |
-| `api-keys.management.page.layout` | `layouts.app` | Layout da página administrativa. |
+| `api-keys.management.middleware` | `['web', 'auth']` | Middleware da interface de gerenciamento. |
+| `api-keys.management.ability` | `manageApiKeys` | Ability exigida para gerenciar um owner. |
+| `api-keys.management.page.layout` | `layouts.app` | Layout da página de gerenciamento. |
 | `api-keys.interface.purposes` | Configurado no arquivo | Valores exibidos para `purpose`. |
 | `api-keys.interface.roles` | Configurado no arquivo | Valores exibidos para `role`. |
 | `api-keys.theme.menu.item` | Configurado no arquivo | Texto e URL do item de menu. |
@@ -67,8 +67,8 @@ e `revoked_by` sejam registrados.
 
 | Variável | Padrão | Configuração |
 | --- | --- | --- |
-| `API_KEYS_MANAGEMENT_PAGE_ENABLED` | `true` | Habilita a página administrativa pronta. |
-| `API_KEYS_MANAGEMENT_LAYOUT` | `layouts.app` | View de layout da página administrativa. |
+| `API_KEYS_MANAGEMENT_PAGE_ENABLED` | `true` | Habilita a página de gerenciamento pronta. |
+| `API_KEYS_MANAGEMENT_LAYOUT` | `layouts.app` | View de layout da página de gerenciamento. |
 | `API_KEYS_CREDENTIAL_PREFIX` | `gpp` | Prefixo público da credencial. |
 | `API_KEYS_PUBLIC_PREFIX_LENGTH` | `6` | Tamanho do prefixo público. |
 | `API_KEYS_SECRET_BYTES` | `32` | Quantidade mínima de bytes do segredo. |

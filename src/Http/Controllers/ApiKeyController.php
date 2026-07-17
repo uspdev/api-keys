@@ -13,7 +13,7 @@ use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 use Uspdev\ApiKeys\Http\Requests\StoreApiKeyRequest;
 use Uspdev\ApiKeys\Models\ApiKey;
 
-/** Processa as ações administrativas usadas pelo componente Blade de API Keys. */
+/** Processa as ações de gerenciamento usadas pelo componente Blade de API Keys. */
 class ApiKeyController
 {
     /** Recebe chaves, criptografia e validação fornecidas pelo Laravel. */
@@ -23,16 +23,17 @@ class ApiKeyController
     ) {
     }
 
-    /** Exibe os tipos de owner registrados para a página administrativa. */
+    /** Exibe os tipos de owner registrados para a página de gerenciamento. */
     public function index(): View
     {
-        return view('api-keys::admin.index', [
+        return view('api-keys::management.index', [
             'ownerAlias' => null,
             'ownerTypes' => $this->registeredOwnerTypes(),
             'owners' => collect(),
         ]);
     }
-    /** Lista os owners de um alias que o usuário atual pode administrar. */
+
+    /** Lista os owners de um alias que o usuário atual pode gerenciar. */
     public function owners(Request $request, string $ownerAlias): View
     {
         $ownerClass = $this->resolveOwnerClass($ownerAlias);
@@ -42,7 +43,7 @@ class ApiKeyController
             ->map(fn (Model $owner): array => $this->ownerEntry($owner))
             ->values();
 
-        return view('api-keys::admin.index', [
+        return view('api-keys::management.index', [
             'ownerAlias' => $ownerAlias,
             'ownerTypes' => $this->registeredOwnerTypes(),
             'owners' => $owners,
@@ -55,7 +56,7 @@ class ApiKeyController
         $ownerModel = $this->resolveOwner($ownerAlias, $owner);
         $this->authorizeManagement($request, $ownerModel);
 
-        return view('api-keys::admin.show', [
+        return view('api-keys::management.show', [
             'owner' => $ownerModel,
             'ownerAlias' => $ownerAlias,
         ]);
@@ -125,7 +126,7 @@ class ApiKeyController
         ]);
     }
 
-    /** Garante que o usuário logado pode administrar chaves deste owner. */
+    /** Garante que o usuário logado pode gerenciar chaves deste owner. */
     private function authorizeManagement(Request $request, Model $owner): void
     {
         if (! $this->canManage($request, $owner)) {
@@ -180,7 +181,7 @@ class ApiKeyController
         return $ownerClass;
     }
 
-    /** Retorna somente aliases válidos para a tela inicial da administração. */
+    /** Retorna somente aliases válidos para a tela inicial de gerenciamento. */
     private function registeredOwnerTypes(): array
     {
         $types = [];

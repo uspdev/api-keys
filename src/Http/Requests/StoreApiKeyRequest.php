@@ -7,7 +7,7 @@ use DateTimeImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/** Valida os dados usados para criar uma API Key pela interface administrativa. */
+/** Valida os dados usados para criar uma API Key pela interface de gerenciamento. */
 class StoreApiKeyRequest extends FormRequest
 {
     /** Mantém a autorização vinculada ao owner, resolvida pelo controller. */

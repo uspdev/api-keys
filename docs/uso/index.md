@@ -10,7 +10,7 @@ o package em uma aplicação Laravel.
 | [guia.md](guia.md) | Passo a passo mínimo para instalar e começar a usar o package. |
 | [configuracao.md](configuracao.md) | Arquivo de configuração, opções disponíveis e variáveis de ambiente. |
 | [traits-e-rotas.md](traits-e-rotas.md) | Traits dos owners, middleware e criação das rotas de negócio. |
-| [views.md](views.md) | Componente Blade, componentes internos e páginas administrativas prontas. |
+| [views.md](views.md) | Componente Blade, componentes internos e páginas de gerenciamento prontas. |
 
 ## Ordem recomendada
 

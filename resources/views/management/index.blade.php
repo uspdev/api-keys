@@ -8,13 +8,13 @@
   <div class="container-fluid py-4">
     <div class="mb-4">
       @if ($ownerAlias !== null)
-        <a href="{{ route('api-keys.admin.index') }}" class="small">&larr; Todos os tipos</a>
+        <a href="{{ route('api-keys.management.index') }}" class="small">&larr; Todos os tipos</a>
       @endif
 
       <h1 class="h3 mb-1">Gerenciamento de API Keys</h1>
       <p class="text-muted mb-0">
         @if ($ownerAlias !== null)
-          Selecione o recurso que deseja administrar em {{ ucfirst($ownerAlias) }}.
+          Selecione o recurso que deseja gerenciar em {{ ucfirst($ownerAlias) }}.
         @else
           Selecione o tipo de recurso que possui API Keys.
         @endif
@@ -30,7 +30,7 @@
         <div class="row">
           @foreach ($ownerTypes as $ownerType)
             <div class="col-md-6 col-lg-4 mb-3">
-              <a href="{{ route('api-keys.admin.owners', ['ownerAlias' => $ownerType['alias']]) }}"
+              <a href="{{ route('api-keys.management.owners', ['ownerAlias' => $ownerType['alias']]) }}"
                 class="card h-100 text-decoration-none">
                 <div class="card-body">
                   <h2 class="h5 text-dark">{{ $ownerType['label'] }}</h2>
@@ -43,12 +43,12 @@
       @endif
     @elseif ($owners->isEmpty())
       <div class="alert alert-light border" role="status">
-        Nenhum recurso disponível para administração.
+        Nenhum recurso disponível para gerenciamento.
       </div>
     @else
       <div class="table-responsive">
         <table class="table table-striped table-bordered table-hover datatable-simples dt-paging-10 responsive">
-          <caption class="sr-only">Recursos disponíveis para administração de API Keys</caption>
+          <caption class="sr-only">Recursos disponíveis para gerenciamento de API Keys</caption>
           <thead>
             <tr>
               <th scope="col">Recurso</th>
@@ -63,7 +63,7 @@
                 <td>{{ $entry['label'] }}</td>
                 <td>{{ $owner->getRouteKey() }}</td>
                 <td class="text-right">
-                  <a href="{{ route('api-keys.admin.show', ['ownerAlias' => $ownerAlias, 'owner' => $owner->getRouteKey()]) }}"
+                  <a href="{{ route('api-keys.management.show', ['ownerAlias' => $ownerAlias, 'owner' => $owner->getRouteKey()]) }}"
                     class="btn btn-sm btn-outline-primary">
                     Gerenciar
                   </a>

@@ -47,6 +47,7 @@ responsiva, sem paginação automática.
 | `api-keys::components/manager` | Coordena a interface e os modais. |
 | `api-keys::components/key-table` | Lista chaves, status, metadados, renovação e revogação. |
 | `api-keys::components/create-modal` | Formulário de criação. |
+| `api-keys::components/details-modal` | Exibe os metadados da chave sem alterar o layout da tabela. |
 | `api-keys::components/secret-modal` | Exibe o token temporário após a criação. |
 | `api-keys::components/status-badge` | Renderiza ativa, expirada ou revogada. |
 
@@ -75,16 +76,16 @@ resources/views/vendor/api-keys/
 A aplicação pode ajustar o HTML, classes CSS e textos publicados sem alterar
 o model ou o serviço de autenticação.
 
-## Página administrativa pronta
+## Página de gerenciamento pronta
 
-O package fornece páginas administrativas opcionais que reutilizam o mesmo
+O package fornece páginas de gerenciamento opcionais que reutilizam o mesmo
 componente:
 
 | View | URL padrão | Função |
 | --- | --- | --- |
-| `api-keys::admin/index` | `/api-keys` | Lista os aliases configurados. |
-| `api-keys::admin/index` | `/api-keys/{ownerAlias}` | Lista os owners autorizados. |
-| `api-keys::admin/show` | `/api-keys/{ownerAlias}/{owner}` | Gerencia as chaves de um owner. |
+| `api-keys::management/index` | `/api-keys` | Lista os aliases configurados. |
+| `api-keys::management/index` | `/api-keys/{ownerAlias}` | Lista os owners autorizados. |
+| `api-keys::management/show` | `/api-keys/{ownerAlias}/{owner}` | Gerencia as chaves de um owner. |
 
 A página completa é habilitada por padrão e pode ser desabilitada:
 
@@ -124,10 +125,10 @@ view e as seções usadas pelas páginas:
 </html>
 ```
 
-O package fornece apenas o conteúdo administrativo e utiliza classes
+O package fornece apenas o conteúdo de gerenciamento e utiliza classes
 compatíveis com o Bootstrap/theme da aplicação.
 
-As páginas administrativas prontas carregam o bloco automaticamente quando o
+As páginas de gerenciamento prontas carregam o bloco automaticamente quando o
 `laravel-usp-theme` está instalado. Ao incorporar apenas o componente
 `<x-api-keys::manager>` em uma página da aplicação, inclua o bloco no layout:
 

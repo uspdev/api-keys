@@ -4,7 +4,7 @@
 
 - PHP 8.3 ou superior;
 - Laravel 12;
-- uma aplicação com sessão e autenticação configuradas para a interface administrativa;
+- uma aplicação com sessão e autenticação configuradas para a interface de gerenciamento;
 - models Eloquent que possam possuir API Keys.
 
 ## Instalação
@@ -77,7 +77,7 @@ A interface pode ser incorporada em qualquer página da aplicação:
 O usuário logado precisa ter a ability configurada em
 `api-keys.management.ability`, que por padrão é `manageApiKeys`.
 
-Também existe uma página administrativa pronta. Com o prefixo padrão, ela
+Também existe uma página de gerenciamento pronta. Com o prefixo padrão, ela
 fica disponível em:
 
 ```text
@@ -89,7 +89,7 @@ fica disponível em:
 A página usa o layout configurado em `api-keys.management.page.layout`. A
 aplicação hospedeira deve fornecer esse layout.
 
-## Ciclo de vida administrativo
+## Ciclo de vida no gerenciamento
 
 Renovar uma API Key significa criar uma nova credencial e revogar a anterior
 em uma única operação. A nova chave mantém o nome, o `purpose`, o `role` e a
