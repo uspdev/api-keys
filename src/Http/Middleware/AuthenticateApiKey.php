@@ -11,7 +11,7 @@ use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 /** Autentica uma API Key recebida e a anexa à requisição. */
 class AuthenticateApiKey
 {
-    /** Recebe o serviço responsável pela validação do token. */
+  
     public function __construct(private readonly ApiKeyManager $apiKeys)
     {
     }

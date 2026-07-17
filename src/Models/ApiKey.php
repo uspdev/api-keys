@@ -2,9 +2,12 @@
 
 namespace Uspdev\ApiKeys\Models;
 
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
+use Throwable;
 use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 
 /** Representa uma credencial com hash vinculada polimorficamente ao proprietário. */
@@ -125,6 +128,70 @@ class ApiKey extends Model
         ];
     }
 
+    /** Prepara todos os dados consumidos pelo componente Blade de gerenciamento. */
+    public static function managerViewData(Model $owner, ?string $ownerAlias = null): array
+    {
+        $managerData = self::managerData($owner, $ownerAlias);
+        $purposes = $managerData['purposes'];
+        $roles = $managerData['roles'];
+        $resolvedOwnerAlias = $managerData['ownerAlias'];
+
+        $managerData['apiKeys'] = $managerData['apiKeys']->map(
+            fn (self $apiKey): array => $apiKey->managerRowData(
+                $owner,
+                $resolvedOwnerAlias,
+                $purposes,
+                $roles,
+            )
+        );
+
+        return [
+            ...$managerData,
+            ...self::createdApiKeyViewData($resolvedOwnerAlias, $managerData['ownerRouteKey']),
+            'hasCreationErrors' => self::hasCreationErrors(),
+        ];
+    }
+
+    /** Formata uma chave para a tabela e para o modal compartilhado de detalhes. */
+    public function managerRowData(Model $owner, string $ownerAlias, array $purposes, array $roles): array
+    {
+        $status = $this->managerStatusData();
+        $credential = (string) config('api-keys.credential_prefix', 'gpp') . '_' . $this->prefix;
+        $purpose = $purposes[$this->purpose] ?? ucfirst($this->purpose);
+        $role = $roles[$this->role] ?? ucfirst($this->role);
+        $accessCount = number_format($this->access_count);
+
+        return [
+            'name' => $this->name,
+            'credential' => $credential,
+            'purpose' => $purpose,
+            'role' => $role,
+            'status' => $status,
+            'last_used_title' => $this->last_used_at?->format('d/m/Y H:i:s'),
+            'last_used_human' => $this->last_used_at?->diffForHumans(),
+            'access_count' => $accessCount,
+            'is_active' => $this->isActive(),
+            'renew_url' => $this->managerRenewUrl($owner, $ownerAlias),
+            'revoke_url' => $this->managerRevokeUrl($owner, $ownerAlias),
+            'details' => [
+                'name' => $this->name,
+                'prefix' => $credential,
+                'status' => $status['label'],
+                'status_class' => $status['class'],
+                'purpose' => $purpose,
+                'role' => $role,
+                'created_at' => $this->created_at?->format('d/m/Y H:i') ?? '—',
+                'expires_at' => $this->expires_at?->format('d/m/Y H:i') ?? 'Nunca',
+                'last_used_at' => $this->last_used_at?->format('d/m/Y H:i') ?? 'Nunca',
+                'last_used_ip' => $this->last_used_ip ?? '—',
+                'access_count' => $accessCount,
+                'created_by' => $this->created_by,
+                'revoked_at' => $this->revoked_at?->format('d/m/Y H:i'),
+                'revoked_by' => $this->revoked_by,
+            ],
+        ];
+    }
+
     /** Monta a URL de revogação de uma chave vinculada ao owner informado. */
     public function managerRevokeUrl(Model $owner, ?string $ownerAlias = null): string
     {
@@ -173,5 +240,76 @@ class ApiKey extends Model
         }
 
         return (string) $resolvedAlias;
+    }
+
+    /** Retorna o rótulo e a classe visual correspondentes ao estado da chave. */
+    private function managerStatusData(): array
+    {
+        if ($this->isRevoked()) {
+            return ['label' => 'Revogada', 'class' => 'badge-danger'];
+        }
+
+        if ($this->isExpired()) {
+            return ['label' => 'Expirada', 'class' => 'badge-warning'];
+        }
+
+        return ['label' => 'Ativa', 'class' => 'badge-success'];
+    }
+
+    /** Recupera e consome o token temporário pertencente ao gerenciador atual. */
+    private static function createdApiKeyViewData(string $ownerAlias, string $ownerRouteKey): array
+    {
+        $result = [
+            'createdApiKeyToken' => null,
+            'createdApiKeyAction' => 'created',
+            'createdApiKeyBelongsToManager' => false,
+        ];
+        $createdApiKey = session('api-keys.created');
+
+        if (! is_array($createdApiKey)) {
+            return $result;
+        }
+
+        $result['createdApiKeyAction'] = ($createdApiKey['action'] ?? null) === 'renewed'
+            ? 'renewed'
+            : 'created';
+        $belongsToManager = ($createdApiKey['owner_alias'] ?? null) === $ownerAlias
+            && (string) ($createdApiKey['owner_key'] ?? '') === $ownerRouteKey;
+        $encryptedToken = $createdApiKey['encrypted_token'] ?? null;
+
+        if (! $belongsToManager || ! is_string($encryptedToken)) {
+            return $result;
+        }
+
+        try {
+            $token = app(Encrypter::class)->decrypt($encryptedToken, false);
+            $result['createdApiKeyToken'] = is_string($token) ? $token : null;
+        } catch (Throwable) {
+            $result['createdApiKeyToken'] = null;
+        } finally {
+            session()->forget('api-keys.created');
+        }
+
+        $result['createdApiKeyBelongsToManager'] = $result['createdApiKeyToken'] !== null;
+
+        return $result;
+    }
+
+    /** Verifica se a validação contém algum campo do formulário de criação. */
+    private static function hasCreationErrors(): bool
+    {
+        $errors = session('errors');
+
+        if (! $errors instanceof ViewErrorBag) {
+            return false;
+        }
+
+        foreach (['name', 'purpose', 'role', 'expires_at'] as $field) {
+            if ($errors->has($field)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -1,40 +1,5 @@
 @props(['owner', 'ownerAlias' => null])
 
-@php
-  $managerData = \Uspdev\ApiKeys\Models\ApiKey::managerData($owner, $ownerAlias);
-  $apiKeys = $managerData['apiKeys'];
-  $ownerAlias = $managerData['ownerAlias'];
-  $ownerRouteKey = $managerData['ownerRouteKey'];
-  $componentId = $managerData['componentId'];
-  $purposes = $managerData['purposes'];
-  $roles = $managerData['roles'];
-  $storeUrl = $managerData['storeUrl'];
-  $createdApiKey = session('api-keys.created');
-  $createdApiKeyToken = null;
-  $createdApiKeyAction = is_array($createdApiKey) ? ($createdApiKey['action'] ?? 'created') : 'created';
-  $createdApiKeyBelongsToManager =
-      is_array($createdApiKey) &&
-      ($createdApiKey['owner_alias'] ?? null) === $ownerAlias &&
-      (string) ($createdApiKey['owner_key'] ?? '') === $ownerRouteKey;
-
-  if ($createdApiKeyBelongsToManager && is_string($createdApiKey['encrypted_token'] ?? null)) {
-      try {
-          $createdApiKeyToken = app(\Illuminate\Contracts\Encryption\Encrypter::class)->decrypt(
-              $createdApiKey['encrypted_token'],
-              false,
-          );
-      } catch (\Throwable) {
-          $createdApiKeyToken = null;
-      } finally {
-          session()->forget('api-keys.created');
-      }
-  }
-
-  $createdApiKeyBelongsToManager = $createdApiKeyBelongsToManager && is_string($createdApiKeyToken);
-  $hasCreationErrors =
-      $errors->has('name') || $errors->has('purpose') || $errors->has('role') || $errors->has('expires_at');
-@endphp
-
 <section id="{{ $componentId }}" class="api-keys-manager" data-api-keys-manager>
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
@@ -49,8 +14,6 @@
 
   @include('api-keys::components.key-table', [
       'apiKeys' => $apiKeys,
-      'owner' => $owner,
-      'ownerAlias' => $ownerAlias,
   ])
 
   @include('api-keys::components.create-modal', ['storeUrl' => $storeUrl])

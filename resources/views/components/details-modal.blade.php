@@ -1,11 +1,9 @@
-@php($detailsModalId = $componentId . '-details')
-
-<div id="{{ $detailsModalId }}" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
-  aria-labelledby="{{ $detailsModalId }}-title" data-api-keys-modal="details" style="display: none;">
+<div id="{{ $componentId }}-details" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+  aria-labelledby="{{ $componentId }}-details-title" data-api-keys-modal="details" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="{{ $detailsModalId }}-title" class="modal-title h5">Detalhes da API Key</h3>
+        <h3 id="{{ $componentId }}-details-title" class="modal-title h5">Detalhes da API Key</h3>
         <button type="button" class="close" aria-label="Fechar" data-api-keys-close>
           <span aria-hidden="true">&times;</span>
         </button>

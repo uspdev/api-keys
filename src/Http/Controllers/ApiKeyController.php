@@ -16,7 +16,6 @@ use Uspdev\ApiKeys\Models\ApiKey;
 /** Processa as ações de gerenciamento usadas pelo componente Blade de API Keys. */
 class ApiKeyController
 {
-    /** Recebe chaves, criptografia e validação fornecidas pelo Laravel. */
     public function __construct(
         private readonly ApiKeyManager $apiKeys,
         private readonly Encrypter $encrypter,
@@ -40,7 +39,7 @@ class ApiKeyController
         $owners = $ownerClass::query()
             ->get()
             ->filter(fn (Model $owner): bool => $this->canManage($request, $owner))
-            ->map(fn (Model $owner): array => $this->ownerEntry($owner))
+            ->map(fn (Model $owner): array => $this->ownerEntry($owner, $ownerAlias))
             ->values();
 
         return view('api-keys::management.index', [
@@ -208,7 +207,7 @@ class ApiKeyController
     }
 
     /** Prepara uma linha de owner sem assumir um atributo de negócio obrigatório. */
-    private function ownerEntry(Model $owner): array
+    private function ownerEntry(Model $owner, string $ownerAlias): array
     {
         $label = $owner->getAttribute('name') ?? $owner->getAttribute('title');
 
@@ -217,8 +216,12 @@ class ApiKeyController
         }
 
         return [
-            'model' => $owner,
             'label' => (string) $label,
+            'route_key' => (string) $owner->getRouteKey(),
+            'management_url' => route('api-keys.management.show', [
+                'ownerAlias' => $ownerAlias,
+                'owner' => $owner->getRouteKey(),
+            ]),
         ];
     }
 

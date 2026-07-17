@@ -58,13 +58,11 @@
           </thead>
           <tbody>
             @foreach ($owners as $entry)
-              @php($owner = $entry['model'])
               <tr>
                 <td>{{ $entry['label'] }}</td>
-                <td>{{ $owner->getRouteKey() }}</td>
+                <td>{{ $entry['route_key'] }}</td>
                 <td class="text-right">
-                  <a href="{{ route('api-keys.management.show', ['ownerAlias' => $ownerAlias, 'owner' => $owner->getRouteKey()]) }}"
-                    class="btn btn-sm btn-outline-primary">
+                  <a href="{{ $entry['management_url'] }}" class="btn btn-sm btn-outline-primary">
                     Gerenciar
                   </a>
                 </td>

@@ -17,7 +17,6 @@ use Uspdev\ApiKeys\Models\ApiKey;
 /** Cria, autentica, renova e revoga credenciais de API Key. */
 class ApiKeyService implements ApiKeyManager
 {
-    /** Recebe os serviços de hash e configuração usados pelo gerenciador. */
     public function __construct(
         private readonly Hasher $hasher,
         private readonly ConfigRepository $config,

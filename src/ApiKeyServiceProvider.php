@@ -2,10 +2,14 @@
 
 namespace Uspdev\ApiKeys;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\View as ViewInstance;
 use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 use Uspdev\ApiKeys\Http\Middleware\AuthenticateApiKey;
+use Uspdev\ApiKeys\Models\ApiKey;
 use Uspdev\ApiKeys\Services\ApiKeyService;
 
 /** Registra os serviços e recursos publicáveis do pacote no Laravel. */
@@ -29,6 +33,7 @@ class ApiKeyServiceProvider extends ServiceProvider
         $router->aliasMiddleware($alias, AuthenticateApiKey::class);
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'api-keys');
+        $this->registerManagerViewComposer();
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->registerUspThemeMenu();
 
@@ -43,6 +48,25 @@ class ApiKeyServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/api-keys'),
         ], 'api-keys-views');
+    }
+
+    /** Entrega à view incorporável os dados preparados pelo model da API Key. */
+    private function registerManagerViewComposer(): void
+    {
+        View::composer('api-keys::components.manager', function (ViewInstance $view): void {
+            $viewData = $view->getData();
+            $owner = $viewData['owner'] ?? null;
+            $ownerAlias = $viewData['ownerAlias'] ?? null;
+
+            if (! $owner instanceof Model) {
+                return;
+            }
+
+            $view->with(ApiKey::managerViewData(
+                $owner,
+                is_string($ownerAlias) ? $ownerAlias : null,
+            ));
+        });
     }
 
     /** Acrescenta a página ao menu do USP Theme sem substituir itens da aplicação. */
