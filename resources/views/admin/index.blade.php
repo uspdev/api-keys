@@ -5,7 +5,7 @@
 @section('title', 'Gerenciamento de API Keys')
 
 @section('content')
-  <div class="container py-4">
+  <div class="container-fluid py-4">
     <div class="mb-4">
       @if ($ownerAlias !== null)
         <a href="{{ route('api-keys.admin.index') }}" class="small">&larr; Todos os tipos</a>

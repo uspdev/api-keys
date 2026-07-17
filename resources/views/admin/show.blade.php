@@ -5,7 +5,7 @@
 @section('title', 'API Keys - ' . $ownerAlias . ' #' . $owner->getRouteKey())
 
 @section('content')
-  <div class="container py-4">
+  <div class="container-fluid py-4">
     <div class="mb-3">
       <a href="{{ route('api-keys.admin.owners', ['ownerAlias' => $ownerAlias]) }}" class="small">&larr; Recursos de
         {{ ucfirst($ownerAlias) }}</a>

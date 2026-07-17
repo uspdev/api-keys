@@ -71,6 +71,29 @@
 
 @once
   <style>
+    [data-api-keys-manager] .api-keys-actions {
+      display: inline-flex;
+      flex-direction: column;
+      gap: .25rem;
+      min-width: 5.5rem;
+      vertical-align: top;
+    }
+
+    [data-api-keys-manager] .api-keys-action,
+    [data-api-keys-manager] .api-keys-action-button {
+      margin: 0;
+      width: 100%;
+    }
+
+    [data-api-keys-manager] summary.api-keys-action-button {
+      display: block;
+      list-style: none;
+    }
+
+    [data-api-keys-manager] summary.api-keys-action-button::-webkit-details-marker {
+      display: none;
+    }
+
     [data-api-keys-manager] .api-keys-secret-value {
       display: block;
       overflow-wrap: anywhere;

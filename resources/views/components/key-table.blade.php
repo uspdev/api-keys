@@ -40,45 +40,47 @@
             </td>
             <td>{{ number_format($apiKey->access_count) }}</td>
             <td class="text-right">
-              <details>
-                <summary class="btn btn-sm btn-outline-secondary d-inline-block">Detalhes</summary>
-                <div class="card card-body text-left mt-2" style="min-width: 260px;">
-                  <dl class="mb-2 small">
-                    <dt>Criada em</dt>
-                    <dd>{{ $apiKey->created_at?->format('d/m/Y H:i') ?? '—' }}</dd>
-                    <dt>Expiração</dt>
-                    <dd>{{ $apiKey->expires_at?->format('d/m/Y H:i') ?? 'Nunca' }}</dd>
-                    <dt>Último IP</dt>
-                    <dd>{{ $apiKey->last_used_ip ?? '—' }}</dd>
-                    @if ($apiKey->created_by !== null)
-                      <dt>Criada pelo usuário ID</dt>
-                      <dd>{{ $apiKey->created_by }}</dd>
-                    @endif
-                    @if ($apiKey->revoked_at)
-                      <dt>Revogada em</dt>
-                      <dd>{{ $apiKey->revoked_at->format('d/m/Y H:i') }}</dd>
-                    @endif
-                    @if ($apiKey->revoked_by !== null)
-                      <dt>Revogada pelo usuário ID</dt>
-                      <dd>{{ $apiKey->revoked_by }}</dd>
-                    @endif
-                  </dl>
-                </div>
-              </details>
+              <div class="api-keys-actions">
+                <details class="api-keys-action">
+                  <summary class="btn btn-sm btn-outline-secondary api-keys-action-button">Detalhes</summary>
+                  <div class="card card-body text-left mt-2" style="min-width: 260px;">
+                    <dl class="mb-2 small">
+                      <dt>Criada em</dt>
+                      <dd>{{ $apiKey->created_at?->format('d/m/Y H:i') ?? '—' }}</dd>
+                      <dt>Expiração</dt>
+                      <dd>{{ $apiKey->expires_at?->format('d/m/Y H:i') ?? 'Nunca' }}</dd>
+                      <dt>Último IP</dt>
+                      <dd>{{ $apiKey->last_used_ip ?? '—' }}</dd>
+                      @if ($apiKey->created_by !== null)
+                        <dt>Criada pelo usuário ID</dt>
+                        <dd>{{ $apiKey->created_by }}</dd>
+                      @endif
+                      @if ($apiKey->revoked_at)
+                        <dt>Revogada em</dt>
+                        <dd>{{ $apiKey->revoked_at->format('d/m/Y H:i') }}</dd>
+                      @endif
+                      @if ($apiKey->revoked_by !== null)
+                        <dt>Revogada pelo usuário ID</dt>
+                        <dd>{{ $apiKey->revoked_by }}</dd>
+                      @endif
+                    </dl>
+                  </div>
+                </details>
 
-              @if ($apiKey->isActive())
-                <form method="POST" action="{{ $apiKey->managerRenewUrl($owner, $ownerAlias) }}" class="d-inline"
-                  data-api-keys-renew-form>
-                  @csrf
-                  <button type="submit" class="btn btn-sm btn-outline-primary">Renovar</button>
-                </form>
+                @if ($apiKey->isActive())
+                  <form method="POST" action="{{ $apiKey->managerRenewUrl($owner, $ownerAlias) }}"
+                    class="api-keys-action" data-api-keys-renew-form>
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-primary api-keys-action-button">Renovar</button>
+                  </form>
 
-                <form method="POST" action="{{ $apiKey->managerRevokeUrl($owner, $ownerAlias) }}" class="d-inline"
-                  data-api-keys-revoke-form>
-                  @csrf
-                  <button type="submit" class="btn btn-sm btn-outline-danger">Revogar</button>
-                </form>
-              @endif
+                  <form method="POST" action="{{ $apiKey->managerRevokeUrl($owner, $ownerAlias) }}"
+                    class="api-keys-action" data-api-keys-revoke-form>
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-danger api-keys-action-button">Revogar</button>
+                  </form>
+                @endif
+              </div>
             </td>
           </tr>
         @endforeach
