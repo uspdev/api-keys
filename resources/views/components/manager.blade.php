@@ -7,7 +7,8 @@
       <p class="text-muted mb-0">Credenciais vinculadas a este recurso.</p>
     </div>
 
-    <button type="button" class="btn btn-primary" data-api-keys-open="create">
+    <button type="button" class="btn btn-primary" data-api-keys-open="form"
+      data-api-keys-form="{{ json_encode($newApiKeyForm) }}">
       Nova API Key
     </button>
   </div>
@@ -16,7 +17,7 @@
       'apiKeys' => $apiKeys,
   ])
 
-  @include('api-keys::components.create-modal', ['storeUrl' => $storeUrl])
+  @include('api-keys::components.create-modal', ['apiKeyForm' => $apiKeyForm])
 
   @if ($createdApiKeyBelongsToManager)
     @include('api-keys::components.secret-modal', [
@@ -131,12 +132,42 @@
       });
     };
 
+    // Alterna o mesmo formulário entre criação e renovação sem duplicar modais por linha.
+    const fillApiKeyForm = (modal, formData) => {
+      const form = modal.querySelector('[data-api-keys-form-element]');
+
+      if (!form) {
+        return;
+      }
+
+      form.action = formData.action;
+      form.querySelector('[name="_api_keys_operation"]').value = formData.operation;
+      form.querySelector('[name="_api_keys_id"]').value = formData.api_key_id;
+
+      Object.entries(formData.values).forEach(([field, value]) => {
+        const input = form.querySelector(`[name="${field}"]`);
+
+        if (input) {
+          input.value = value ?? '';
+        }
+      });
+
+      modal.querySelector('[data-api-keys-form-title]').textContent = formData.title;
+      modal.querySelector('[data-api-keys-form-submit]').textContent = formData.submit_label;
+      form.querySelectorAll('.is-invalid').forEach((input) => input.classList.remove('is-invalid'));
+      form.querySelectorAll('.invalid-feedback').forEach((feedback) => feedback.hidden = true);
+    };
+
     manager.querySelectorAll('[data-api-keys-open]').forEach((button) => {
       button.addEventListener('click', () => {
         const modal = manager.querySelector(`[data-api-keys-modal="${button.dataset.apiKeysOpen}"]`);
 
         if (modal && button.dataset.apiKeysDetails) {
           fillDetailsModal(modal, JSON.parse(button.dataset.apiKeysDetails));
+        }
+
+        if (modal && button.dataset.apiKeysForm) {
+          fillApiKeyForm(modal, JSON.parse(button.dataset.apiKeysForm));
         }
 
         openModal(modal);
@@ -174,16 +205,21 @@
       });
     });
 
-    manager.querySelectorAll('[data-api-keys-renew-form]').forEach((form) => {
+    manager.querySelectorAll('[data-api-keys-form-element]').forEach((form) => {
       form.addEventListener('submit', (event) => {
-        if (!window.confirm('Renovar esta API Key? Uma nova chave será criada e a anterior será revogada.')) {
+        const operation = form.querySelector('[name="_api_keys_operation"]')?.value;
+
+        if (
+          operation === 'renew'
+          && !window.confirm('Renovar esta API Key? Uma nova chave será criada e a anterior será revogada.')
+        ) {
           event.preventDefault();
         }
       });
     });
 
-    @if ($hasCreationErrors)
-      openModal(manager.querySelector('[data-api-keys-modal="create"]'));
+    @if ($hasApiKeyFormErrors)
+      openModal(manager.querySelector('[data-api-keys-modal="form"]'));
     @elseif ($createdApiKeyBelongsToManager)
       openModal(manager.querySelector('[data-api-keys-modal="secret"]'));
     @endif

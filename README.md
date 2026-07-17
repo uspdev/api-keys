@@ -66,8 +66,10 @@ As rotas de gerenciamento usam `web` e `auth` por padrão e exigem a ability
 `manageApiKeys` no usuário logado para o owner. A aplicação pode ajustar o
 middleware e o nome da ability em `api-keys.management`.
 
-Chaves ativas podem ser renovadas pela interface: o package cria uma nova
-credencial com os mesmos metadados e validade, revoga a anterior em uma
+Chaves ativas podem ser renovadas pela interface. A ação reabre o mesmo modal
+usado na criação, preenchido com nome, `purpose`, `role` e expiração da chave
+atual, para que esses dados possam ser ajustados. Ao confirmar, o package cria
+a nova credencial com os valores informados, revoga a anterior na mesma
 transação e exibe o novo token uma única vez. Registros revogados permanecem
 visíveis, sem exclusão ou soft delete; `revoked_by` registra o identificador
 numérico do usuário responsável.

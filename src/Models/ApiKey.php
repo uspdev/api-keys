@@ -135,6 +135,11 @@ class ApiKey extends Model
         $purposes = $managerData['purposes'];
         $roles = $managerData['roles'];
         $resolvedOwnerAlias = $managerData['ownerAlias'];
+        $createForm = self::managerCreateFormData(
+            $managerData['storeUrl'],
+            $purposes,
+            $roles,
+        );
 
         $managerData['apiKeys'] = $managerData['apiKeys']->map(
             fn (self $apiKey): array => $apiKey->managerRowData(
@@ -148,7 +153,17 @@ class ApiKey extends Model
         return [
             ...$managerData,
             ...self::createdApiKeyViewData($resolvedOwnerAlias, $managerData['ownerRouteKey']),
-            'hasCreationErrors' => self::hasCreationErrors(),
+            'newApiKeyForm' => $createForm,
+            'apiKeyForm' => self::managerFormData(
+                $createForm,
+                $managerData['apiKeys']->all(),
+                $resolvedOwnerAlias,
+                $managerData['ownerRouteKey'],
+            ),
+            'hasApiKeyFormErrors' => self::hasApiKeyFormErrors(
+                $resolvedOwnerAlias,
+                $managerData['ownerRouteKey'],
+            ),
         ];
     }
 
@@ -171,7 +186,7 @@ class ApiKey extends Model
             'last_used_human' => $this->last_used_at?->diffForHumans(),
             'access_count' => $accessCount,
             'is_active' => $this->isActive(),
-            'renew_url' => $this->managerRenewUrl($owner, $ownerAlias),
+            'renewal_form' => $this->managerRenewalFormData($owner, $ownerAlias),
             'revoke_url' => $this->managerRevokeUrl($owner, $ownerAlias),
             'details' => [
                 'name' => $this->name,
@@ -188,6 +203,25 @@ class ApiKey extends Model
                 'created_by' => $this->created_by,
                 'revoked_at' => $this->revoked_at?->format('d/m/Y H:i'),
                 'revoked_by' => $this->revoked_by,
+            ],
+        ];
+    }
+
+    /** Prepara os valores editáveis usados para renovar esta chave no modal compartilhado. */
+    public function managerRenewalFormData(Model $owner, ?string $ownerAlias = null): array
+    {
+        return [
+            'action' => $this->managerRenewUrl($owner, $ownerAlias),
+            'operation' => 'renew',
+            'api_key_id' => (string) $this->getKey(),
+            'title' => 'Renovar API Key',
+            'submit_label' => 'Renovar chave',
+            'errors' => [],
+            'values' => [
+                'name' => (string) $this->name,
+                'purpose' => (string) $this->purpose,
+                'role' => (string) $this->role,
+                'expires_at' => $this->expires_at?->format('Y-m-d') ?? '',
             ],
         ];
     }
@@ -295,12 +329,82 @@ class ApiKey extends Model
         return $result;
     }
 
-    /** Verifica se a validação contém algum campo do formulário de criação. */
-    private static function hasCreationErrors(): bool
+    /** Prepara o estado inicial do modal para a criação de uma nova chave. */
+    private static function managerCreateFormData(string $storeUrl, array $purposes, array $roles): array
+    {
+        return [
+            'action' => $storeUrl,
+            'operation' => 'create',
+            'api_key_id' => '',
+            'title' => 'Nova API Key',
+            'submit_label' => 'Criar chave',
+            'errors' => [],
+            'values' => [
+                'name' => '',
+                'purpose' => (string) (array_key_first($purposes) ?? ''),
+                'role' => (string) (array_key_first($roles) ?? ''),
+                'expires_at' => '',
+            ],
+        ];
+    }
+
+    /** Restaura no modal os dados submetidos quando houver erro de validação. */
+    private static function managerFormData(
+        array $createForm,
+        array $apiKeys,
+        string $ownerAlias,
+        string $ownerRouteKey,
+    ): array
+    {
+        if (! self::hasApiKeyFormErrors($ownerAlias, $ownerRouteKey)) {
+            return $createForm;
+        }
+
+        $form = $createForm;
+        $operation = session()->getOldInput('_api_keys_operation');
+        $apiKeyId = (string) session()->getOldInput('_api_keys_id', '');
+
+        if ($operation === 'renew') {
+            foreach ($apiKeys as $apiKey) {
+                if ((string) ($apiKey['renewal_form']['api_key_id'] ?? '') === $apiKeyId) {
+                    $form = $apiKey['renewal_form'];
+
+                    break;
+                }
+            }
+        }
+
+        foreach (array_keys($form['values']) as $field) {
+            $value = session()->getOldInput($field, $form['values'][$field]);
+            $form['values'][$field] = is_scalar($value) ? (string) $value : '';
+        }
+
+        $errors = session('errors');
+
+        if ($errors instanceof ViewErrorBag) {
+            foreach (array_keys($form['values']) as $field) {
+                if ($errors->has($field)) {
+                    $form['errors'][$field] = $errors->first($field);
+                }
+            }
+        }
+
+        return $form;
+    }
+
+    /** Verifica se os erros pertencem ao formulário deste gerenciador. */
+    private static function hasApiKeyFormErrors(string $ownerAlias, string $ownerRouteKey): bool
     {
         $errors = session('errors');
 
         if (! $errors instanceof ViewErrorBag) {
+            return false;
+        }
+
+        if (
+            session()->getOldInput('_api_keys_owner_alias') !== $ownerAlias
+            || (string) session()->getOldInput('_api_keys_owner_key', '') !== $ownerRouteKey
+        ) {
             return false;
         }
 

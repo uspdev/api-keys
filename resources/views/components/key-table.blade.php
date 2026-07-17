@@ -45,11 +45,10 @@
                 </button>
 
                 @if ($apiKey['is_active'])
-                  <form method="POST" action="{{ $apiKey['renew_url'] }}"
-                    class="api-keys-action" data-api-keys-renew-form>
-                    @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-primary api-keys-action-button">Renovar</button>
-                  </form>
+                  <button type="button" class="btn btn-sm btn-outline-primary api-keys-action-button"
+                    data-api-keys-open="form" data-api-keys-form="{{ json_encode($apiKey['renewal_form']) }}">
+                    Renovar
+                  </button>
 
                   <form method="POST" action="{{ $apiKey['revoke_url'] }}"
                     class="api-keys-action" data-api-keys-revoke-form>

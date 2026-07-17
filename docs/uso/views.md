@@ -46,7 +46,7 @@ responsiva, sem paginação automática.
 | --- | --- |
 | `api-keys::components/manager` | Coordena a interface e os modais. |
 | `api-keys::components/key-table` | Lista chaves, status, metadados, renovação e revogação. |
-| `api-keys::components/create-modal` | Formulário de criação. |
+| `api-keys::components/create-modal` | Formulário único de criação e renovação. |
 | `api-keys::components/details-modal` | Exibe os metadados da chave sem alterar o layout da tabela. |
 | `api-keys::components/secret-modal` | Exibe o token temporário após a criação. |
 | `api-keys::components/status-badge` | Renderiza ativa, expirada ou revogada. |
@@ -54,10 +54,12 @@ responsiva, sem paginação automática.
 O token completo é criptografado na flash session e removido após o consumo.
 Depois que a modal é fechada, ele não pode ser recuperado.
 
-A renovação cria um novo token com os metadados da chave ativa, revoga a chave
-anterior e exibe o novo token pela mesma modal de uso único. Chaves revogadas
-e expiradas permanecem na tabela para consulta; o package não oferece exclusão
-nem soft delete.
+A renovação usa a mesma instância do modal de criação, preenchida no navegador
+com os metadados da chave selecionada. Depois da edição e confirmação, ela cria
+um novo token com os valores informados, revoga a chave anterior e exibe o novo
+token pela modal de uso único. O modal não é repetido para cada linha da tabela.
+Chaves revogadas e expiradas permanecem na tabela para consulta; o package não
+oferece exclusão nem soft delete.
 
 ## Publicação e customização
 

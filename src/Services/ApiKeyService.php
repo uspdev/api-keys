@@ -118,10 +118,18 @@ class ApiKeyService implements ApiKeyManager
         }
     }
 
-    /** Cria uma nova credencial com os mesmos metadados e revoga a anterior. */
-    public function renew(ApiKey $apiKey, ?int $createdBy = null): CreatedApiKeyDto
+    /**
+     * Cria uma nova credencial com metadados editáveis e revoga a anterior.
+     *
+     * @param  array{name?: string, purpose?: string, role?: string, expires_at?: DateTimeInterface|null}|null  $attributes
+     */
+    public function renew(
+        ApiKey $apiKey,
+        ?int $createdBy = null,
+        ?array $attributes = null,
+    ): CreatedApiKeyDto
     {
-        return DB::transaction(function () use ($apiKey, $createdBy): CreatedApiKeyDto {
+        return DB::transaction(function () use ($apiKey, $createdBy, $attributes): CreatedApiKeyDto {
             $currentApiKey = ApiKey::query()
                 ->lockForUpdate()
                 ->findOrFail($apiKey->getKey());
@@ -136,12 +144,30 @@ class ApiKeyService implements ApiKeyManager
                 throw new InvalidArgumentException('The API key owner could not be resolved.');
             }
 
+            $attributes ??= [];
+            $name = array_key_exists('name', $attributes)
+                ? (string) $attributes['name']
+                : (string) $currentApiKey->name;
+            $purpose = array_key_exists('purpose', $attributes)
+                ? (string) $attributes['purpose']
+                : (string) $currentApiKey->purpose;
+            $role = array_key_exists('role', $attributes)
+                ? (string) $attributes['role']
+                : (string) $currentApiKey->role;
+            $expiresAt = array_key_exists('expires_at', $attributes)
+                ? $attributes['expires_at']
+                : $currentApiKey->expires_at;
+
+            if ($expiresAt !== null && ! $expiresAt instanceof DateTimeInterface) {
+                throw new InvalidArgumentException('The expiration date must implement DateTimeInterface.');
+            }
+
             $created = $this->create(
                 $owner,
-                (string) $currentApiKey->name,
-                (string) $currentApiKey->purpose,
-                (string) $currentApiKey->role,
-                $currentApiKey->expires_at,
+                $name,
+                $purpose,
+                $role,
+                $expiresAt,
                 $createdBy,
             );
 

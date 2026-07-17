@@ -26,6 +26,14 @@ interface ApiKeyManager
     /** Revoga uma credencial e registra o responsável pela operação. */
     public function revoke(ApiKey $apiKey, ?int $revokedBy = null): void;
 
-    /** Cria uma nova credencial equivalente e revoga a credencial anterior. */
-    public function renew(ApiKey $apiKey, ?int $createdBy = null): CreatedApiKeyDto;
+    /**
+     * Cria uma nova credencial com os metadados informados e revoga a anterior.
+     *
+     * @param  array{name?: string, purpose?: string, role?: string, expires_at?: DateTimeInterface|null}|null  $attributes
+     */
+    public function renew(
+        ApiKey $apiKey,
+        ?int $createdBy = null,
+        ?array $attributes = null,
+    ): CreatedApiKeyDto;
 }

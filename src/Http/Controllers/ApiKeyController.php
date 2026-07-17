@@ -105,7 +105,12 @@ class ApiKeyController
     }
 
     /** Renova uma chave ativa, entregando a nova credencial somente uma vez. */
-    public function renew(Request $request, string $ownerAlias, string $owner, string $apiKey): RedirectResponse
+    public function renew(
+        StoreApiKeyRequest $request,
+        string $ownerAlias,
+        string $owner,
+        string $apiKey,
+    ): RedirectResponse
     {
         $ownerModel = $this->resolveOwner($ownerAlias, $owner);
         $this->authorizeManagement($request, $ownerModel);
@@ -115,7 +120,17 @@ class ApiKeyController
             abort(404);
         }
 
-        $renewed = $this->apiKeys->renew($apiKeyModel, $this->resolveAuthenticatedUserId($request));
+        $data = $request->validated();
+        $renewed = $this->apiKeys->renew(
+            $apiKeyModel,
+            $this->resolveAuthenticatedUserId($request),
+            [
+                'name' => $data['name'],
+                'purpose' => $data['purpose'],
+                'role' => $data['role'],
+                'expires_at' => $this->parseExpiration($data['expires_at'] ?? null),
+            ],
+        );
 
         return redirect()->back()->with('api-keys.created', [
             'owner_alias' => $ownerAlias,

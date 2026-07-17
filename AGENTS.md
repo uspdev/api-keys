@@ -27,11 +27,6 @@ Antes de alterar o código, leia integralmente:
 docs/api-key.md
 ```
 
-Esse arquivo é a principal fonte de requisitos funcionais e de domínio.
-
-```text
-docs/initial-decisions.md
-```
 Também devem ser considerados:
 
 - `composer.json`;
@@ -53,7 +48,6 @@ Quando a documentação estiver ambígua, não invente silenciosamente uma regra
 
 O package `uspdev/forms` é uma referência de organização e integração com Laravel, especialmente para:
 
-- autoload PSR-4;
 - autodiscovery do Service Provider;
 - configuração publicável;
 - migrations publicáveis;

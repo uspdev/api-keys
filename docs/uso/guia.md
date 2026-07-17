@@ -92,9 +92,10 @@ aplicação hospedeira deve fornecer esse layout.
 ## Ciclo de vida no gerenciamento
 
 Renovar uma API Key significa criar uma nova credencial e revogar a anterior
-em uma única operação. A nova chave mantém o nome, o `purpose`, o `role` e a
-data de expiração da chave anterior; o token completo é exibido uma única vez,
-como na criação normal.
+em uma única operação. Ao selecionar a renovação, o modal de criação é aberto
+com o nome, o `purpose`, o `role` e a data de expiração atuais. Esses dados
+podem ser alterados antes da confirmação e serão usados na nova chave. O token
+completo é exibido uma única vez, como na criação normal.
 
 A renovação só está disponível para chaves ativas. Para uma chave expirada,
 crie uma nova chave com a validade desejada. A chave anterior permanece na
