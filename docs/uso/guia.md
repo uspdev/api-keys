@@ -75,19 +75,12 @@ A interface pode ser incorporada em qualquer página da aplicação:
 ```
 
 O usuário logado precisa ter a ability configurada em
-`api-keys.management.ability`, que por padrão é `manageApiKeys`.
+`api-keys.management.ability`, que por padrão é `manageApiKeys`. A aplicação
+hospedeira é responsável pela rota GET, pelo layout e pelo menu da página.
 
-Também existe uma página de gerenciamento pronta. Com o prefixo padrão, ela
-fica disponível em:
-
-```text
-/api-keys
-/api-keys/project
-/api-keys/project/15
-```
-
-A página usa o layout configurado em `api-keys.management.page.layout`. A
-aplicação hospedeira deve fornecer esse layout.
+Quando usar o `laravel-usp-theme`, a view da aplicação deve incluir
+explicitamente `laravel-usp-theme::blocos.datatable-simples` para habilitar os
+recursos de tabela do tema.
 
 ## Ciclo de vida no gerenciamento
 

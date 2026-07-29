@@ -134,6 +134,13 @@ Ao gerar uma nova chave, o sistema exibe o valor em texto puro **apenas uma vez*
 
 A biblioteca fornece componentes de interface para criação, administração e revogação de API Keys diretamente pela aplicação hospedeira. A interface foi projetada para seguir o padrão visual dos componentes do ecossistema **USPdev** e integrar-se ao sistema de permissões do projeto.
 
+O componente oficial é `<x-api-keys::manager>`. A aplicação hospedeira define
+a rota GET, o layout e o item de menu, e o inclui para o owner que deseja
+administrar. O package fornece somente as rotas POST de criação, renovação e
+revogação; não fornece páginas completas nem depende de temas. Ao usar
+`laravel-usp-theme`, a aplicação deve incluir explicitamente
+`laravel-usp-theme::blocos.datatable-simples` na sua view.
+
 ## Aba **Integrações**
 
 Cada objeto proprietário (projeto, formulário, workflow etc.) pode disponibilizar uma aba **Integrações**, responsável pelo gerenciamento das API Keys vinculadas.

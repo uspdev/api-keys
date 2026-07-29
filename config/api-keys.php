@@ -13,22 +13,6 @@ $middleware = [
     'auth',
 ];
 
-$managementPage = [
-    // A página completa pode ser desabilitada quando a aplicação usa somente
-    // o componente Blade <x-api-keys::manager />.
-    'enabled' => (bool) env('API_KEYS_MANAGEMENT_PAGE_ENABLED', true),
-
-    // Layout fornecido pela aplicação hospedeira.
-    'layout' => env('API_KEYS_MANAGEMENT_LAYOUT', 'layouts.app'),
-];
-
-$themeMenuItem = [
-    'text' => '<i class="fas fa-key"></i> API Keys',
-
-    // Quando nulo, o provider utiliza o valor configurado em "prefix".
-    'url' => null,
-];
-
 $purposes = [
     'integration' => 'Integração',
     'ai' => 'IA',
@@ -45,7 +29,7 @@ return [
     // Exemplo: 'project' => App\\Models\\Project::class,
     'owners' => [],
 
-    // Prefixo das rotas de gerenciamento fornecidas pelo package.
+    // Prefixo das rotas de ação fornecidas pelo componente Blade.
     'prefix' => 'api-keys',
 
     // Formato público da credencial.
@@ -72,19 +56,10 @@ return [
         'name' => env('API_KEYS_QUERY_PARAMETER_NAME', 'api_key'),
     ],
 
-    // Rotas e autorização da interface de gerenciamento do package.
+    // Middleware e autorização das ações da interface do package.
     'management' => [
         'middleware' => $middleware,
         'ability' => 'manageApiKeys',
-        'page' => $managementPage,
-    ],
-
-    // Integração opcional com o menu principal do laravel-usp-theme.
-    'theme' => [
-        'menu' => [
-            'enabled' => (bool) env('API_KEYS_USP_THEME_MENU_ENABLED', false),
-            'item' => $themeMenuItem,
-        ],
     ],
 
     // Valores exibidos nos campos de propósito e papel da interface Blade.

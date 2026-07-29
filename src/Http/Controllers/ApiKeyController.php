@@ -5,7 +5,6 @@ namespace Uspdev\ApiKeys\Http\Controllers;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Contracts\Encryption\Encrypter;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,45 +19,6 @@ class ApiKeyController
         private readonly ApiKeyManager $apiKeys,
         private readonly Encrypter $encrypter,
     ) {
-    }
-
-    /** Exibe os tipos de owner registrados para a página de gerenciamento. */
-    public function index(): View
-    {
-        return view('api-keys::management.index', [
-            'ownerAlias' => null,
-            'ownerTypes' => $this->registeredOwnerTypes(),
-            'owners' => collect(),
-        ]);
-    }
-
-    /** Lista os owners de um alias que o usuário atual pode gerenciar. */
-    public function owners(Request $request, string $ownerAlias): View
-    {
-        $ownerClass = $this->resolveOwnerClass($ownerAlias);
-        $owners = $ownerClass::query()
-            ->get()
-            ->filter(fn (Model $owner): bool => $this->canManage($request, $owner))
-            ->map(fn (Model $owner): array => $this->ownerEntry($owner, $ownerAlias))
-            ->values();
-
-        return view('api-keys::management.index', [
-            'ownerAlias' => $ownerAlias,
-            'ownerTypes' => $this->registeredOwnerTypes(),
-            'owners' => $owners,
-        ]);
-    }
-
-    /** Renderiza a página completa e reutiliza o mesmo gerenciador Blade incorporável. */
-    public function show(Request $request, string $ownerAlias, string $owner): View
-    {
-        $ownerModel = $this->resolveOwner($ownerAlias, $owner);
-        $this->authorizeManagement($request, $ownerModel);
-
-        return view('api-keys::management.show', [
-            'owner' => $ownerModel,
-            'ownerAlias' => $ownerAlias,
-        ]);
     }
 
     /** Cria uma chave e disponibiliza seu token criptografado em flash session. */
@@ -148,7 +108,7 @@ class ApiKeyController
         }
     }
 
-    /** Verifica a ability configurada sem expor owners não autorizados na listagem. */
+    /** Verifica a ability configurada para administrar o owner informado. */
     private function canManage(Request $request, Model $owner): bool
     {
         $user = $request->user();
@@ -193,57 +153,6 @@ class ApiKeyController
         }
 
         return $ownerClass;
-    }
-
-    /** Retorna somente aliases válidos para a tela inicial de gerenciamento. */
-    private function registeredOwnerTypes(): array
-    {
-        $types = [];
-
-        foreach ((array) config('api-keys.owners', []) as $alias => $ownerClass) {
-            if (! is_string($alias) || ! is_string($ownerClass) || ! is_a($ownerClass, Model::class, true)) {
-                continue;
-            }
-
-            $ownerPrototype = new $ownerClass();
-
-            if (! method_exists($ownerPrototype, 'apiKeys')) {
-                continue;
-            }
-
-            $types[] = [
-                'alias' => $alias,
-                'class' => $ownerClass,
-                'label' => $this->ownerAliasLabel($alias),
-            ];
-        }
-
-        return $types;
-    }
-
-    /** Prepara uma linha de owner sem assumir um atributo de negócio obrigatório. */
-    private function ownerEntry(Model $owner, string $ownerAlias): array
-    {
-        $label = $owner->getAttribute('name') ?? $owner->getAttribute('title');
-
-        if (! is_scalar($label) || (string) $label === '') {
-            $label = '#' . (string) $owner->getRouteKey();
-        }
-
-        return [
-            'label' => (string) $label,
-            'route_key' => (string) $owner->getRouteKey(),
-            'management_url' => route('api-keys.management.show', [
-                'ownerAlias' => $ownerAlias,
-                'owner' => $owner->getRouteKey(),
-            ]),
-        ];
-    }
-
-    /** Converte aliases técnicos em títulos legíveis sem depender do model owner. */
-    private function ownerAliasLabel(string $alias): string
-    {
-        return ucwords(str_replace(['-', '_'], ' ', $alias));
     }
 
     /** Confere o tipo polimórfico e o identificador antes de uma ação destrutiva. */

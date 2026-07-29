@@ -60,7 +60,7 @@ O model deve utilizar `HasApiKeys`. Depois, incorpore o gerenciador na página d
 <x-api-keys::manager :owner="$project" />
 ```
 
-O package fornece a tabela, criação, exibição única do token e revogação. As rotas dessas ações usam o prefixo configurado em `api-keys.prefix` e os middlewares configurados em `api-keys.management`, seguindo o padrão dos packages USPdev.
+O package fornece a tabela, criação, exibição única do token, revogação e renovação. As ações usam as rotas POST `api-keys.keys.store`, `api-keys.keys.revoke` e `api-keys.keys.renew`, sob o prefixo configurado em `api-keys.prefix`.
 
 As rotas de gerenciamento usam `web` e `auth` por padrão e exigem a ability
 `manageApiKeys` no usuário logado para o owner. A aplicação pode ajustar o
@@ -74,63 +74,27 @@ transação e exibe o novo token uma única vez. Registros revogados permanecem
 visíveis, sem exclusão ou soft delete; `revoked_by` registra o identificador
 numérico do usuário responsável.
 
-### Página de gerenciamento opcional
+### Página na aplicação hospedeira
 
-O package também fornece uma página completa que reutiliza o mesmo componente
-Blade do gerenciador:
+O package não fornece rotas GET, layout, menu ou páginas completas. A aplicação
+hospedeira deve criar a página, protegê-la e renderizar o componente para o
+owner que ela decidiu expor. Também cabe à aplicação definir o item de menu.
 
-~~~text
-/api-keys
-/api-keys/project
-/api-keys/project/15
+Em uma aplicação que use o `laravel-usp-theme`, inclua explicitamente o bloco
+DataTable na própria view:
+
+~~~blade
+@extends('laravel-usp-theme::master')
+
+@include('laravel-usp-theme::blocos.datatable-simples')
+
+@section('content')
+  <x-api-keys::manager :owner="$project" owner-alias="project" />
+@endsection
 ~~~
 
-O primeiro endereço lista os aliases configurados em `api-keys.owners`; o
-segundo lista os owners autorizados para o alias; e o terceiro exibe a tela de
-gerenciamento do owner. A página usa `layouts.app` por padrão, compatível com o
-layout visual fornecido pelo `laravel-usp-theme`, e pode ser ajustada ou
-desabilitada:
-
-~~~php
-'management' => [
-    'page' => [
-        'enabled' => true,
-        'layout' => 'layouts.app',
-    ],
-],
-~~~
-
-O layout deve ser fornecido pela aplicação hospedeira. A autorização continua
-sendo feita pela ability configurada em `api-keys.management.ability` para cada
-owner.
-
-### Integração com o laravel-usp-theme
-
-Para adicionar automaticamente a página ao menu principal configurado em
-`config/usp-theme.php`, habilite a integração no `config/api-keys.php` publicado:
-
-~~~php
-'theme' => [
-    'menu' => [
-        'enabled' => true,
-        'item' => [
-            'text' => '<i class="fas fa-key"></i> API Keys',
-            'url' => 'api-keys',
-        ],
-    ],
-],
-~~~
-
-Quando `url` não for informado, o package utiliza o valor de
-`api-keys.prefix`. O item é acrescentado ao menu existente em
-`laravel-usp-theme.menu`; os demais itens não são alterados. A integração é
-desabilitada por padrão e só funciona quando o theme disponibiliza essa
-configuração.
-
-O campo `can` é opcional e pode usar uma ability global da aplicação quando o
-item precisar ser ocultado de parte dos usuários. A ability `manageApiKeys`
-normalmente depende de um owner específico e, por isso, não deve ser usada
-diretamente no item global da navbar.
+As submissões do componente usam diretamente as rotas POST registradas pelo
+package; não recrie as rotas de criação, renovação ou revogação na aplicação.
 
 ## Contribuições
 

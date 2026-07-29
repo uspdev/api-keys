@@ -35,7 +35,6 @@ class ApiKeyServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'api-keys');
         $this->registerManagerViewComposer();
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-        $this->registerUspThemeMenu();
 
         $this->publishes([
             __DIR__ . '/../config/api-keys.php' => config_path('api-keys.php'),
@@ -69,42 +68,4 @@ class ApiKeyServiceProvider extends ServiceProvider
         });
     }
 
-    /** Acrescenta a página ao menu do USP Theme sem substituir itens da aplicação. */
-    private function registerUspThemeMenu(): void
-    {
-        if (
-            ! (bool) config('api-keys.theme.menu.enabled', false)
-            || ! (bool) config('api-keys.management.page.enabled', true)
-            || ! config()->has('laravel-usp-theme.menu')
-        ) {
-            return;
-        }
-
-        $menu = config('laravel-usp-theme.menu');
-
-        if (! is_array($menu)) {
-            return;
-        }
-
-        $item = (array) config('api-keys.theme.menu.item', []);
-        $url = $item['url'] ?? null;
-
-        if (! is_string($url) || $url === '') {
-            $url = trim((string) config('api-keys.prefix', 'api-keys'), '/');
-        }
-
-        if (! isset($item['text']) || ! is_string($item['text']) || $item['text'] === '') {
-            $item['text'] = 'API Keys';
-        }
-
-        $item['url'] = $url;
-
-        foreach ($menu as $menuItem) {
-            if (is_array($menuItem) && ($menuItem['url'] ?? null) === $url) {
-                return;
-            }
-        }
-
-        config(['laravel-usp-theme.menu' => [...$menu, $item]]);
-    }
 }

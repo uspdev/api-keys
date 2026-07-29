@@ -78,68 +78,25 @@ resources/views/vendor/api-keys/
 A aplicação pode ajustar o HTML, classes CSS e textos publicados sem alterar
 o model ou o serviço de autenticação.
 
-## Página de gerenciamento pronta
+## Página da aplicação hospedeira
 
-O package fornece páginas de gerenciamento opcionais que reutilizam o mesmo
-componente:
+O package fornece somente o componente e suas rotas POST. A aplicação
+hospedeira deve criar a rota GET, definir o layout e posicionar o componente
+na página que fizer sentido para seu fluxo.
 
-| View | URL padrão | Função |
-| --- | --- | --- |
-| `api-keys::management/index` | `/api-keys` | Lista os aliases configurados. |
-| `api-keys::management/index` | `/api-keys/{ownerAlias}` | Lista os owners autorizados. |
-| `api-keys::management/show` | `/api-keys/{ownerAlias}/{owner}` | Gerencia as chaves de um owner. |
-
-A página completa é habilitada por padrão e pode ser desabilitada:
-
-```php
-'management' => [
-    'page' => [
-        'enabled' => false,
-    ],
-],
-```
-
-## Layout da aplicação hospedeira
-
-As páginas prontas usam o layout configurado em
-`api-keys.management.page.layout`:
-
-```php
-'management' => [
-    'page' => [
-        'layout' => 'layouts.app',
-    ],
-],
-```
-
-O layout não é fornecido pelo package. A aplicação deve disponibilizar a
-view e as seções usadas pelas páginas:
-
-```blade
-{{-- resources/views/layouts/app.blade.php --}}
-<html>
-  <head>
-    <title>@yield('title')</title>
-  </head>
-  <body>
-    @yield('content')
-  </body>
-</html>
-```
-
-O package fornece apenas o conteúdo de gerenciamento e utiliza classes
-compatíveis com o Bootstrap/theme da aplicação.
-
-As páginas de gerenciamento prontas carregam o bloco automaticamente quando o
-`laravel-usp-theme` está instalado. Ao incorporar apenas o componente
-`<x-api-keys::manager>` em uma página da aplicação, inclua o bloco no layout:
+Quando usar `laravel-usp-theme`, inclua explicitamente o bloco DataTable na
+view da aplicação:
 
 ```blade
 @extends('laravel-usp-theme::master')
 
 @include('laravel-usp-theme::blocos.datatable-simples')
+
+@section('content')
+  <x-api-keys::manager :owner="$project" owner-alias="project" />
+@endsection
 ```
 
-A página de owners e a tabela de API Keys utilizam paginação local de 10
-registros. Todos os registros continuam sendo carregados pelo Laravel; não há
-paginação de consulta ao banco.
+O item de menu também pertence à configuração do tema da aplicação. As ações
+de criar, renovar e revogar não precisam ser recriadas: o componente usa as
+rotas POST do package.

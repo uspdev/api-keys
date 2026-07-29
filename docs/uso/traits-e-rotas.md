@@ -105,21 +105,22 @@ O middleware:
 Falhas de autenticação retornam HTTP 401. A ausência de uma ability deve ser
 tratada pela aplicação e normalmente retorna HTTP 403.
 
-## Rotas de gerenciamento do package
+## Rotas de ação do componente
 
 O package carrega automaticamente suas próprias rotas de gerenciamento:
 
 | URL padrão | Nome da rota | Função |
 | --- | --- | --- |
-| `/api-keys` | `api-keys.management.index` | Lista aliases registrados. |
-| `/api-keys/{ownerAlias}` | `api-keys.management.owners` | Lista owners autorizados. |
-| `/api-keys/{ownerAlias}/{owner}` | `api-keys.management.show` | Exibe o gerenciador do owner. |
 | `/api-keys/{ownerAlias}/{owner}/keys` | `api-keys.keys.store` | Cria uma API Key. |
 | `/api-keys/{ownerAlias}/{owner}/keys/{apiKey}/revoke` | `api-keys.keys.revoke` | Revoga uma API Key. |
 | `/api-keys/{ownerAlias}/{owner}/keys/{apiKey}/renew` | `api-keys.keys.renew` | Cria uma nova chave e revoga a anterior. |
 
 Essas rotas usam o middleware configurado em `api-keys.management.middleware`
 e a ability configurada em `api-keys.management.ability`.
+
+O package não registra rota GET para a interface. A aplicação hospedeira cria
+a própria página, aplica a autorização de acesso à página e inclui
+`<x-api-keys::manager>` para o owner correspondente.
 
 ## Identificador do criador
 

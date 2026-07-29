@@ -54,21 +54,17 @@ e `revoked_by` sejam registrados.
 
 | Chave | Padrão | Uso |
 | --- | --- | --- |
-| `api-keys.prefix` | `api-keys` | Prefixo das rotas de gerenciamento. |
+| `api-keys.prefix` | `api-keys` | Prefixo das rotas POST usadas pelo componente. |
 | `api-keys.owners` | `[]` | Aliases e classes dos owners permitidos. |
 | `api-keys.management.middleware` | `['web', 'auth']` | Middleware da interface de gerenciamento. |
 | `api-keys.management.ability` | `manageApiKeys` | Ability exigida para gerenciar um owner. |
-| `api-keys.management.page.layout` | `layouts.app` | Layout da página de gerenciamento. |
 | `api-keys.interface.purposes` | Configurado no arquivo | Valores exibidos para `purpose`. |
 | `api-keys.interface.roles` | Configurado no arquivo | Valores exibidos para `role`. |
-| `api-keys.theme.menu.item` | Configurado no arquivo | Texto e URL do item de menu. |
 
 ## Variáveis de ambiente
 
 | Variável | Padrão | Configuração |
 | --- | --- | --- |
-| `API_KEYS_MANAGEMENT_PAGE_ENABLED` | `true` | Habilita a página de gerenciamento pronta. |
-| `API_KEYS_MANAGEMENT_LAYOUT` | `layouts.app` | View de layout da página de gerenciamento. |
 | `API_KEYS_CREDENTIAL_PREFIX` | `gpp` | Prefixo público da credencial. |
 | `API_KEYS_PUBLIC_PREFIX_LENGTH` | `6` | Tamanho do prefixo público. |
 | `API_KEYS_SECRET_BYTES` | `32` | Quantidade mínima de bytes do segredo. |
@@ -76,15 +72,10 @@ e `revoked_by` sejam registrados.
 | `API_KEYS_REQUEST_ATTRIBUTE` | `apiKey` | Atributo do request com a chave autenticada. |
 | `API_KEYS_QUERY_PARAMETER_ENABLED` | `false` | Permite token via query string. |
 | `API_KEYS_QUERY_PARAMETER_NAME` | `api_key` | Nome do parâmetro de query string. |
-| `API_KEYS_USP_THEME_MENU_ENABLED` | `false` | Habilita a integração opcional com o USP Theme. |
 
 ## Exemplo de `.env`
 
 ```dotenv
-API_KEYS_MANAGEMENT_PAGE_ENABLED=true
-# Caso utilize o laravel-usp-theme
-API_KEYS_MANAGEMENT_LAYOUT=laravel-usp-theme::master
-API_KEYS_USP_THEME_MENU_ENABLED=true
 API_KEYS_MIDDLEWARE_ALIAS=uspdevApiKeys
 API_KEYS_REQUEST_ATTRIBUTE=apiKey
 API_KEYS_QUERY_PARAMETER_ENABLED=false

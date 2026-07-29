@@ -267,19 +267,9 @@ O nome da ability pode ser alterado em:
 ],
 ```
 
-As páginas completas fornecidas pelo package usam, por padrão:
-
-```text
-/api-keys
-/api-keys/{ownerAlias}
-/api-keys/{ownerAlias}/{owner}
-```
-
-Elas dependem do layout configurado em
-`api-keys.management.page.layout`, com padrão `layouts.app`.
-
-Quando o pedido determinar que o gerenciamento fique dentro da tela do owner,
-incorpore o componente Blade na página indicada:
+Crie na própria aplicação a rota GET e a página que hospedará o componente.
+O package não fornece layout, menu nem rotas GET de gerenciamento. Incorpore o
+componente Blade na página indicada:
 
 ```blade
 <x-api-keys::manager :owner="$project" />
@@ -298,17 +288,6 @@ Autorize o usuário no controller ou na view **antes de renderizar o
 componente**. O package autoriza as ações de criação, renovação e revogação,
 mas a aplicação continua responsável pela autorização da página onde o
 componente foi incorporado.
-
-Se a aplicação usar somente o componente incorporado, a página completa pode
-ser desabilitada:
-
-```php
-'management' => [
-    'page' => [
-        'enabled' => false,
-    ],
-],
-```
 
 Para muitos owners, prefira o componente dentro da página do próprio recurso.
 A página geral do package carrega os owners e filtra em memória quais o usuário
