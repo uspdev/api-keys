@@ -13,14 +13,19 @@ use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 /** Representa uma credencial com hash vinculada polimorficamente ao proprietário. */
 class ApiKey extends Model
 {
+    /** Finalidade padrão para integrações que consomem dados estruturados. */
     public const PURPOSE_INTEGRATION = 'integration';
 
+    /** Finalidade padrão para integrações que consomem contexto de IA. */
     public const PURPOSE_AI = 'ai';
 
+    /** Papel padrão com acesso de leitura limitado. */
     public const ROLE_VIEWER = 'viewer';
 
+    /** Papel padrão com acesso de leitura e escrita definido pelo owner. */
     public const ROLE_COLLABORATOR = 'collaborator';
 
+    /** Papel padrão que normalmente recebe todas as abilities do owner. */
     public const ROLE_ADMINISTRATOR = 'administrator';
 
     protected $table = 'uspdev_api_keys';
@@ -50,31 +55,52 @@ class ApiKey extends Model
         ];
     }
 
-    /** Resolve o modelo polimórfico proprietário desta credencial. */
+    /**
+     * Resolve o modelo polimórfico proprietário desta credencial.
+     *
+     * @return MorphTo<Model, $this> Relação polimórfica com o owner da chave.
+     */
     public function owner(): MorphTo
     {
         return $this->morphTo();
     }
 
-    /** Determina se a credencial foi revogada explicitamente. */
+    /**
+     * Determina se a credencial foi revogada explicitamente.
+     *
+     * @return bool `true` quando `revoked_at` estiver preenchido.
+     */
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
     }
 
-    /** Determina se a data de expiração configurada já passou. */
+    /**
+     * Determina se a data de expiração configurada já passou.
+     *
+     * @return bool `true` quando existir expiração anterior ao momento atual.
+     */
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
-    /** Determina se a credencial ainda pode ser autenticada. */
+    /**
+     * Determina se a credencial ainda pode ser autenticada.
+     *
+     * @return bool `true` para chaves não revogadas e não expiradas.
+     */
     public function isActive(): bool
     {
         return ! $this->isRevoked() && ! $this->isExpired();
     }
 
-    /** Verifica uma ability pela API pública de autorização da credencial. */
+    /**
+     * Verifica uma ability pela API pública de autorização da credencial.
+     *
+     * @param string $ability Ability de negócio exigida pela operação.
+     * @return bool `true` quando o owner concede a ability ao papel da chave ou concede `*`.
+     */
     public function allows(string $ability): bool
     {
         $owner = $this->owner;
@@ -92,13 +118,26 @@ class ApiKey extends Model
         return in_array('*', $abilities, true) || in_array($ability, $abilities, true);
     }
 
-    /** Autentica um token pelo serviço de chaves resolvido no container. */
+    /**
+     * Autentica um token pelo serviço de chaves resolvido no container.
+     *
+     * @param string $token Credencial completa enviada pelo cliente.
+     * @return self|null Chave ativa autenticada ou `null` para token recusado.
+     */
     public static function authenticate(string $token): ?self
     {
         return app(ApiKeyManager::class)->authenticate($token);
     }
 
-    /** Retorna os dados necessários para renderizar o gerenciador Blade incorporável. */
+    /**
+     * Retorna os dados necessários para renderizar o gerenciador Blade incorporável.
+     *
+     * @param Model $owner Owner cujas chaves serão exibidas.
+     * @param string|null $ownerAlias Alias configurado para o owner ou `null` para resolvê-lo.
+     * @return array{apiKeys: \Illuminate\Database\Eloquent\Collection<int, self>, ownerAlias: string, ownerRouteKey: string, purposes: array<string, string>, roles: array<string, string>, componentId: string, storeUrl: string} Dados base do componente.
+     *
+     * @throws InvalidArgumentException Quando o owner não usa `HasApiKeys` ou não está configurado.
+     */
     public static function managerData(Model $owner, ?string $ownerAlias = null): array
     {
         if (! method_exists($owner, 'apiKeys')) {
@@ -128,7 +167,15 @@ class ApiKey extends Model
         ];
     }
 
-    /** Prepara todos os dados consumidos pelo componente Blade de gerenciamento. */
+    /**
+     * Prepara todos os dados consumidos pelo componente Blade de gerenciamento.
+     *
+     * @param Model $owner Owner cujas chaves serão renderizadas.
+     * @param string|null $ownerAlias Alias configurado para o owner ou `null` para resolvê-lo.
+     * @return array<string, mixed> Dados completos para a view `api-keys::components.manager`.
+     *
+     * @throws InvalidArgumentException Quando o owner não usa `HasApiKeys` ou não está configurado.
+     */
     public static function managerViewData(Model $owner, ?string $ownerAlias = null): array
     {
         $managerData = self::managerData($owner, $ownerAlias);
@@ -167,7 +214,15 @@ class ApiKey extends Model
         ];
     }
 
-    /** Formata uma chave para a tabela e para o modal compartilhado de detalhes. */
+    /**
+     * Formata uma chave para a tabela e para o modal compartilhado de detalhes.
+     *
+     * @param Model $owner Owner ao qual a chave pertence.
+     * @param string $ownerAlias Alias configurado para montar as URLs de ação.
+     * @param array<string, string> $purposes Rótulos configurados para cada finalidade.
+     * @param array<string, string> $roles Rótulos configurados para cada papel.
+     * @return array<string, mixed> Dados serializáveis de uma linha do gerenciador.
+     */
     public function managerRowData(Model $owner, string $ownerAlias, array $purposes, array $roles): array
     {
         $status = $this->managerStatusData();
@@ -207,7 +262,13 @@ class ApiKey extends Model
         ];
     }
 
-    /** Prepara os valores editáveis usados para renovar esta chave no modal compartilhado. */
+    /**
+     * Prepara os valores editáveis usados para renovar esta chave no modal compartilhado.
+     *
+     * @param Model $owner Owner ao qual a chave pertence.
+     * @param string|null $ownerAlias Alias configurado para montar a URL de renovação.
+     * @return array<string, mixed> Estado inicial do formulário de renovação.
+     */
     public function managerRenewalFormData(Model $owner, ?string $ownerAlias = null): array
     {
         return [
@@ -226,7 +287,15 @@ class ApiKey extends Model
         ];
     }
 
-    /** Monta a URL de revogação de uma chave vinculada ao owner informado. */
+    /**
+     * Monta a URL de revogação de uma chave vinculada ao owner informado.
+     *
+     * @param Model $owner Owner ao qual a chave pertence.
+     * @param string|null $ownerAlias Alias configurado ou `null` para resolvê-lo.
+     * @return string URL gerada pela rota nomeada de revogação.
+     *
+     * @throws InvalidArgumentException Quando o owner não estiver registrado no alias informado.
+     */
     public function managerRevokeUrl(Model $owner, ?string $ownerAlias = null): string
     {
         $ownerAlias = self::resolveManagerOwnerAlias($owner, $ownerAlias);
@@ -238,7 +307,15 @@ class ApiKey extends Model
         ]);
     }
 
-    /** Monta a URL de renovação de uma chave vinculada ao owner informado. */
+    /**
+     * Monta a URL de renovação de uma chave vinculada ao owner informado.
+     *
+     * @param Model $owner Owner ao qual a chave pertence.
+     * @param string|null $ownerAlias Alias configurado ou `null` para resolvê-lo.
+     * @return string URL da rota nomeada de renovação.
+     *
+     * @throws InvalidArgumentException Quando o owner não estiver registrado no alias informado.
+     */
     public function managerRenewUrl(Model $owner, ?string $ownerAlias = null): string
     {
         $ownerAlias = self::resolveManagerOwnerAlias($owner, $ownerAlias);
@@ -250,7 +327,15 @@ class ApiKey extends Model
         ]);
     }
 
-    /** Resolve e valida o alias configurado para a classe do owner. */
+    /**
+     * Resolve e valida o alias configurado para a classe do owner.
+     *
+     * @param Model $owner Owner cuja classe será procurada na configuração.
+     * @param string|null $ownerAlias Alias explícito ou `null` para descoberta automática.
+     * @return string Alias válido para a classe do owner.
+     *
+     * @throws InvalidArgumentException Quando o alias não corresponder ao owner configurado.
+     */
     private static function resolveManagerOwnerAlias(Model $owner, ?string $ownerAlias): string
     {
         $owners = (array) config('api-keys.owners', []);
@@ -276,7 +361,11 @@ class ApiKey extends Model
         return (string) $resolvedAlias;
     }
 
-    /** Retorna o rótulo e a classe visual correspondentes ao estado da chave. */
+    /**
+     * Retorna o rótulo e a classe visual correspondentes ao estado da chave.
+     *
+     * @return array{label: 'Ativa'|'Expirada'|'Revogada', class: 'badge-success'|'badge-warning'|'badge-danger'} Estado pronto para renderização.
+     */
     private function managerStatusData(): array
     {
         if ($this->isRevoked()) {
@@ -290,7 +379,13 @@ class ApiKey extends Model
         return ['label' => 'Ativa', 'class' => 'badge-success'];
     }
 
-    /** Recupera e consome o token temporário pertencente ao gerenciador atual. */
+    /**
+     * Recupera e consome o token temporário pertencente ao gerenciador atual.
+     *
+     * @param string $ownerAlias Alias do owner exibido pelo componente.
+     * @param string $ownerRouteKey Chave de rota do owner exibido pelo componente.
+     * @return array{createdApiKeyToken: string|null, createdApiKeyAction: 'created'|'renewed', createdApiKeyBelongsToManager: bool} Dados temporários da flash session.
+     */
     private static function createdApiKeyViewData(string $ownerAlias, string $ownerRouteKey): array
     {
         $result = [
@@ -329,7 +424,14 @@ class ApiKey extends Model
         return $result;
     }
 
-    /** Prepara o estado inicial do modal para a criação de uma nova chave. */
+    /**
+     * Prepara o estado inicial do modal para a criação de uma nova chave.
+     *
+     * @param string $storeUrl URL da rota que recebe a criação.
+     * @param array<string, string> $purposes Finalidades disponíveis na interface.
+     * @param array<string, string> $roles Papéis disponíveis na interface.
+     * @return array<string, mixed> Estado inicial do formulário de criação.
+     */
     private static function managerCreateFormData(string $storeUrl, array $purposes, array $roles): array
     {
         return [
@@ -348,7 +450,15 @@ class ApiKey extends Model
         ];
     }
 
-    /** Restaura no modal os dados submetidos quando houver erro de validação. */
+    /**
+     * Restaura no modal os dados submetidos quando houver erro de validação.
+     *
+     * @param array<string, mixed> $createForm Estado padrão do formulário de criação.
+     * @param list<array<string, mixed>> $apiKeys Linhas de chaves exibidas pelo gerenciador.
+     * @param string $ownerAlias Alias do owner exibido pelo componente.
+     * @param string $ownerRouteKey Chave de rota do owner exibido pelo componente.
+     * @return array<string, mixed> Formulário com valores antigos e erros da sessão, quando aplicáveis.
+     */
     private static function managerFormData(
         array $createForm,
         array $apiKeys,
@@ -392,7 +502,13 @@ class ApiKey extends Model
         return $form;
     }
 
-    /** Verifica se os erros pertencem ao formulário deste gerenciador. */
+    /**
+     * Verifica se os erros pertencem ao formulário deste gerenciador.
+     *
+     * @param string $ownerAlias Alias do owner exibido pelo componente.
+     * @param string $ownerRouteKey Chave de rota do owner exibido pelo componente.
+     * @return bool `true` quando houver erros associados a este owner.
+     */
     private static function hasApiKeyFormErrors(string $ownerAlias, string $ownerRouteKey): bool
     {
         $errors = session('errors');

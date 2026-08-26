@@ -10,13 +10,21 @@ use Illuminate\Validation\Rule;
 /** Valida os dados usados para criar ou renovar uma API Key pela interface. */
 class StoreApiKeyRequest extends FormRequest
 {
-    /** Mantém a autorização vinculada ao owner, resolvida pelo controller. */
+    /**
+     * Mantém a autorização vinculada ao owner, resolvida pelo controller.
+     *
+     * @return bool Sempre `true`; a autorização é avaliada no controller.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /** Retorna as regras configuráveis dos campos de criação da credencial. */
+    /**
+     * Retorna as regras configuráveis dos campos de criação da credencial.
+     *
+     * @return array<string, list<mixed>> Regras para nome, finalidade, papel e expiração.
+     */
     public function rules(): array
     {
         $purposes = array_keys((array) config('api-keys.interface.purposes', []));

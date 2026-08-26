@@ -15,7 +15,11 @@ use Uspdev\ApiKeys\Services\ApiKeyService;
 /** Registra os serviços e recursos publicáveis do pacote no Laravel. */
 class ApiKeyServiceProvider extends ServiceProvider
 {
-    /** Registra a configuração e a implementação do gerenciador de chaves. */
+    /**
+     * Registra a configuração e a implementação do gerenciador de chaves.
+     *
+     * @return void
+     */
     public function register(): void
     {
         $this->mergeConfigFrom(
@@ -26,7 +30,12 @@ class ApiKeyServiceProvider extends ServiceProvider
         $this->app->singleton(ApiKeyManager::class, ApiKeyService::class);
     }
 
-    /** Registra o middleware e disponibiliza configuração e migrations para publicação. */
+    /**
+     * Registra o middleware e disponibiliza configuração e migrations para publicação.
+     *
+     * @param Router $router Roteador Laravel usado para registrar o alias.
+     * @return void
+     */
     public function boot(Router $router): void
     {
         $alias = (string) config('api-keys.middleware.alias', 'uspdevApiKeys');
@@ -49,7 +58,11 @@ class ApiKeyServiceProvider extends ServiceProvider
         ], 'api-keys-views');
     }
 
-    /** Entrega à view incorporável os dados preparados pelo model da API Key. */
+    /**
+     * Entrega à view incorporável os dados preparados pelo model da API Key.
+     *
+     * @return void
+     */
     private function registerManagerViewComposer(): void
     {
         View::composer('api-keys::components.manager', function (ViewInstance $view): void {

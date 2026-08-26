@@ -15,13 +15,26 @@ use Uspdev\ApiKeys\Models\ApiKey;
 /** Processa as ações de gerenciamento usadas pelo componente Blade de API Keys. */
 class ApiKeyController
 {
+    /**
+     * Recebe os serviços usados pelas ações de gerenciamento.
+     *
+     * @param ApiKeyManager $apiKeys Serviço de criação, renovação e revogação.
+     * @param Encrypter $encrypter Serviço que protege o token na flash session.
+     */
     public function __construct(
         private readonly ApiKeyManager $apiKeys,
         private readonly Encrypter $encrypter,
     ) {
     }
 
-    /** Cria uma chave e disponibiliza seu token criptografado em flash session. */
+    /**
+     * Cria uma chave e disponibiliza seu token criptografado em flash session.
+     *
+     * @param StoreApiKeyRequest $request Dados validados do formulário.
+     * @param string $ownerAlias Alias configurado para a classe do owner.
+     * @param string $owner Chave de rota do owner.
+     * @return RedirectResponse Redirecionamento de volta com token criptografado de entrega única.
+     */
     public function store(StoreApiKeyRequest $request, string $ownerAlias, string $owner): RedirectResponse
     {
         $ownerModel = $this->resolveOwner($ownerAlias, $owner);
@@ -48,7 +61,15 @@ class ApiKeyController
         ]);
     }
 
-    /** Revoga uma chave somente quando ela pertence ao owner informado na rota. */
+    /**
+     * Revoga uma chave somente quando ela pertence ao owner informado na rota.
+     *
+     * @param Request $request Requisição do usuário autenticado.
+     * @param string $ownerAlias Alias configurado para a classe do owner.
+     * @param string $owner Chave de rota do owner.
+     * @param string $apiKey Identificador da chave a revogar.
+     * @return RedirectResponse Redirecionamento de volta com mensagem de sucesso.
+     */
     public function revoke(Request $request, string $ownerAlias, string $owner, string $apiKey): RedirectResponse
     {
         $ownerModel = $this->resolveOwner($ownerAlias, $owner);
@@ -64,7 +85,15 @@ class ApiKeyController
         return redirect()->back()->with('api-keys.message', 'A API Key foi revogada.');
     }
 
-    /** Renova uma chave ativa, entregando a nova credencial somente uma vez. */
+    /**
+     * Renova uma chave ativa, entregando a nova credencial somente uma vez.
+     *
+     * @param StoreApiKeyRequest $request Dados validados do formulário.
+     * @param string $ownerAlias Alias configurado para a classe do owner.
+     * @param string $owner Chave de rota do owner.
+     * @param string $apiKey Identificador da chave que será renovada.
+     * @return RedirectResponse Redirecionamento de volta com token criptografado de entrega única.
+     */
     public function renew(
         StoreApiKeyRequest $request,
         string $ownerAlias,
@@ -100,7 +129,13 @@ class ApiKeyController
         ]);
     }
 
-    /** Garante que o usuário logado pode gerenciar chaves deste owner. */
+    /**
+     * Garante que o usuário logado pode gerenciar chaves deste owner.
+     *
+     * @param Request $request Requisição que contém o usuário autenticado.
+     * @param Model $owner Owner que será administrado.
+     * @return void
+     */
     private function authorizeManagement(Request $request, Model $owner): void
     {
         if (! $this->canManage($request, $owner)) {
@@ -108,7 +143,13 @@ class ApiKeyController
         }
     }
 
-    /** Verifica a ability configurada para administrar o owner informado. */
+    /**
+     * Verifica a ability configurada para administrar o owner informado.
+     *
+     * @param Request $request Requisição que contém o usuário autenticado.
+     * @param Model $owner Owner para o qual a ability será avaliada.
+     * @return bool `true` quando o usuário pode administrar as chaves.
+     */
     private function canManage(Request $request, Model $owner): bool
     {
         $user = $request->user();
@@ -121,7 +162,13 @@ class ApiKeyController
         return $ability !== '' && method_exists($user, 'can') && $user->can($ability, $owner);
     }
 
-    /** Resolve o model a partir de um alias previamente registrado pela aplicação. */
+    /**
+     * Resolve o model a partir de um alias previamente registrado pela aplicação.
+     *
+     * @param string $ownerAlias Alias configurado para a classe do owner.
+     * @param string $owner Valor da chave de rota do owner.
+     * @return Model Owner resolvido pela vinculação de rota.
+     */
     private function resolveOwner(string $ownerAlias, string $owner): Model
     {
         $ownerClass = $this->resolveOwnerClass($ownerAlias);
@@ -136,7 +183,12 @@ class ApiKeyController
         return $ownerModel;
     }
 
-    /** Resolve um alias seguro e exige que o model seja compatível com HasApiKeys. */
+    /**
+     * Resolve um alias seguro e exige que o model seja compatível com HasApiKeys.
+     *
+     * @param string $ownerAlias Alias recebido pela rota.
+     * @return class-string<Model> Classe do owner registrada na configuração.
+     */
     private function resolveOwnerClass(string $ownerAlias): string
     {
         $owners = (array) config('api-keys.owners', []);
@@ -155,14 +207,25 @@ class ApiKeyController
         return $ownerClass;
     }
 
-    /** Confere o tipo polimórfico e o identificador antes de uma ação destrutiva. */
+    /**
+     * Confere o tipo polimórfico e o identificador antes de uma ação destrutiva.
+     *
+     * @param ApiKey $apiKey Chave cuja posse será conferida.
+     * @param Model $owner Owner esperado na rota.
+     * @return bool `true` quando a chave pertence exatamente ao owner.
+     */
     private function belongsToOwner(ApiKey $apiKey, Model $owner): bool
     {
         return $apiKey->owner_type === $owner->getMorphClass()
             && (string) $apiKey->owner_id === (string) $owner->getKey();
     }
 
-    /** Converte a data do formulário para o fim do dia selecionado. */
+    /**
+     * Converte a data do formulário para o fim do dia selecionado.
+     *
+     * @param mixed $value Valor recebido no campo `expires_at`.
+     * @return DateTimeInterface|null Data no fim do dia ou `null` para valor vazio ou inválido.
+     */
     private function parseExpiration(mixed $value): ?DateTimeInterface
     {
         if (! is_string($value) || $value === '') {
@@ -174,7 +237,12 @@ class ApiKeyController
         return $expiration === false ? null : $expiration->setTime(23, 59, 59);
     }
 
-    /** Mantém apenas identificadores numéricos compatíveis com os campos de auditoria. */
+    /**
+     * Mantém apenas identificadores numéricos compatíveis com os campos de auditoria.
+     *
+     * @param Request $request Requisição que contém o usuário autenticado.
+     * @return int|null Identificador numérico do usuário ou `null` quando incompatível.
+     */
     private function resolveAuthenticatedUserId(Request $request): ?int
     {
         $identifier = $request->user()?->getAuthIdentifier();

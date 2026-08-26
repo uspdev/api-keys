@@ -17,13 +17,32 @@ use Uspdev\ApiKeys\Models\ApiKey;
 /** Cria, autentica, renova e revoga credenciais de API Key. */
 class ApiKeyService implements ApiKeyManager
 {
+    /**
+     * Recebe os serviços usados para hash e leitura da configuração.
+     *
+     * @param Hasher $hasher Serviço de hash dos segredos.
+     * @param ConfigRepository $config Repositório da configuração do package.
+     */
     public function __construct(
         private readonly Hasher $hasher,
         private readonly ConfigRepository $config,
     ) {
     }
 
-    /** Persiste uma credencial com hash e retorna seu token único em texto puro. */
+    /**
+     * Persiste uma credencial com hash e retorna seu token único em texto puro.
+     *
+     * @param Model $owner Modelo proprietário da nova chave.
+     * @param string $name Nome legível da credencial.
+     * @param string $purpose Finalidade definida pela aplicação.
+     * @param string $role Papel usado para resolver abilities.
+     * @param DateTimeInterface|null $expiresAt Data futura de expiração ou `null`.
+     * @param int|null $createdBy Identificador numérico do criador.
+     * @return CreatedApiKeyDto Chave persistida e token de entrega única.
+     *
+     * @throws InvalidArgumentException Quando a expiração não estiver no futuro.
+     * @throws RuntimeException Quando não for possível obter prefixo único após as tentativas.
+     */
     public function create(
         Model $owner,
         string $name,
@@ -79,7 +98,13 @@ class ApiKeyService implements ApiKeyManager
         throw new RuntimeException('Unable to allocate a unique API key prefix.');
     }
 
-    /** Valida um token e registra metadados somente após validar seu hash. */
+    /**
+     * Valida um token e registra metadados somente após validar seu hash.
+     *
+     * @param string $token Credencial completa enviada pelo cliente.
+     * @param string|null $ipAddress Endereço IP que será registrado no uso válido.
+     * @return ApiKey|null Chave ativa autenticada ou `null` para token recusado.
+     */
     public function authenticate(string $token, ?string $ipAddress = null): ?ApiKey
     {
         [$publicPrefix, $secret] = $this->parseToken($token) ?? [null, null];
@@ -107,7 +132,13 @@ class ApiKeyService implements ApiKeyManager
         return $apiKey;
     }
 
-    /** Marca uma credencial como revogada e registra o responsável pela operação. */
+    /**
+     * Marca uma credencial como revogada e registra o responsável pela operação.
+     *
+     * @param ApiKey $apiKey Chave a revogar.
+     * @param int|null $revokedBy Identificador numérico de quem revogou a chave.
+     * @return void
+     */
     public function revoke(ApiKey $apiKey, ?int $revokedBy = null): void
     {
         if (! $apiKey->isRevoked()) {
@@ -121,7 +152,12 @@ class ApiKeyService implements ApiKeyManager
     /**
      * Cria uma nova credencial com metadados editáveis e revoga a anterior.
      *
-     * @param  array{name?: string, purpose?: string, role?: string, expires_at?: DateTimeInterface|null}|null  $attributes
+     * @param ApiKey $apiKey Chave ativa que será revogada após a criação da substituta.
+     * @param int|null $createdBy Identificador numérico de quem executou a renovação.
+     * @param array{name?: string, purpose?: string, role?: string, expires_at?: DateTimeInterface|null}|null $attributes Valores que substituem os metadados atuais.
+     * @return CreatedApiKeyDto Nova credencial persistida e token de entrega única.
+     *
+     * @throws InvalidArgumentException Quando a chave, o owner ou a expiração forem inválidos.
      */
     public function renew(
         ApiKey $apiKey,
@@ -177,7 +213,11 @@ class ApiKeyService implements ApiKeyManager
         });
     }
 
-    /** Gera o identificador público e indexado usado para localizar a credencial. */
+    /**
+     * Gera o identificador público e indexado usado para localizar a credencial.
+     *
+     * @return string Prefixo aleatório no tamanho configurado.
+     */
     private function newPublicPrefix(): string
     {
         $length = max(1, (int) $this->config->get('api-keys.public_prefix_length', 6));
@@ -185,7 +225,13 @@ class ApiKeyService implements ApiKeyManager
         return $this->randomString($length, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
     }
 
-    /** Gera um segredo imprevisível e seguro para URL antes de aplicar o hash. */
+    /**
+     * Gera um segredo imprevisível e seguro para URL antes de aplicar o hash.
+     *
+     * @return string Segredo codificado para uso seguro em URLs.
+     *
+     * @throws \Random\RandomException Quando a fonte criptográfica não estiver disponível.
+     */
     private function newSecret(): string
     {
         $bytes = max(32, (int) $this->config->get('api-keys.secret_bytes', 32));
@@ -193,7 +239,12 @@ class ApiKeyService implements ApiKeyManager
         return rtrim(strtr(base64_encode(random_bytes($bytes)), '+/', '-_'), '=');
     }
 
-    /** Separa e valida o formato configurado da credencial em prefixo e segredo. */
+    /**
+     * Separa e valida o formato configurado da credencial em prefixo e segredo.
+     *
+     * @param string $token Credencial completa recebida.
+     * @return array{0: string, 1: string}|null Prefixo público e segredo ou `null` quando malformado.
+     */
     private function parseToken(string $token): ?array
     {
         $credentialPrefix = (string) $this->config->get(
@@ -215,7 +266,15 @@ class ApiKeyService implements ApiKeyManager
         return [$parts[0], $parts[1]];
     }
 
-    /** Gera uma string criptograficamente aleatória a partir do alfabeto informado. */
+    /**
+     * Gera uma string criptograficamente aleatória a partir do alfabeto informado.
+     *
+     * @param int $length Quantidade de caracteres a gerar.
+     * @param non-empty-string $alphabet Caracteres elegíveis para cada posição.
+     * @return string Valor aleatório com o tamanho solicitado.
+     *
+     * @throws \Random\RandomException Quando a fonte criptográfica não estiver disponível.
+     */
     private function randomString(int $length, string $alphabet): string
     {
         $lastIndex = strlen($alphabet) - 1;
