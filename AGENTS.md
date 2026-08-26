@@ -1,4 +1,3 @@
-
 ## Objetivo do projeto
 
 Este repositório contém um package Laravel para gerenciamento de API Keys vinculadas a modelos proprietários por relacionamento polimórfico.
@@ -339,6 +338,6 @@ Apresente:
 - comandos executados;
 - resultados dos testes;
 - pendências;
-- saída resumida de `git status`.
+- comando de git add dos aquivos da feature e commit
 
 Se alguma validação falhar, informe claramente. Não esconda erros nem declare sucesso sem evidência.
