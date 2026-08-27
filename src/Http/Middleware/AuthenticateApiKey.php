@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Uspdev\ApiKeys\Contracts\ApiKeyManager;
 
-/** Autentica uma API Key recebida e a anexa à requisição. */
+/** Autentica uma API Key, autoriza suas abilities e a anexa à requisição. */
 class AuthenticateApiKey
 {
     /**
@@ -16,19 +16,24 @@ class AuthenticateApiKey
      *
      * @param ApiKeyManager $apiKeys Serviço de ciclo de vida das API Keys.
      */
-    public function __construct(private readonly ApiKeyManager $apiKeys)
-    {
-    }
+    public function __construct(private readonly ApiKeyManager $apiKeys) {}
 
     /**
-     * Extrai, autentica e expõe uma credencial antes de continuar a requisição.
+     * Autentica a credencial e exige ao menos uma das abilities da rota.
      *
      * @param Request $request Requisição que contém a credencial.
      * @param Closure(Request): Response $next Próximo middleware ou controlador da cadeia.
-     * @return Response Resposta do próximo elemento ou erro 401 de autenticação.
+     * @param string ...$abilities Abilities alternativas exigidas pela rota.
+     * @return Response Resposta seguinte ou erro 401, 403 ou 500.
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string ...$abilities): Response
     {
+        $abilities = array_map('trim', $abilities);
+
+        if ($abilities === [] || in_array('', $abilities, true)) {
+            return $this->invalidAbilitiesResponse();
+        }
+
         $token = $request->bearerToken();
 
         /** Permite o fallback menos seguro por query string apenas quando habilitado. */
@@ -50,7 +55,14 @@ class AuthenticateApiKey
         $attribute = (string) config('api-keys.middleware.request_attribute', 'apiKey');
         $request->attributes->set($attribute, $apiKey);
 
-        return $next($request);
+        // Permite que a rota seja acessada se a API Key tiver pelo menos uma das abilities exigidas.
+        foreach ($abilities as $ability) {
+            if ($apiKey->allows($ability)) {
+                return $next($request);
+            }
+        }
+
+        return $this->forbiddenResponse();
     }
 
     /**
@@ -61,5 +73,27 @@ class AuthenticateApiKey
     private function unauthenticatedResponse(): JsonResponse
     {
         return new JsonResponse(['message' => 'Unauthenticated.'], Response::HTTP_UNAUTHORIZED);
+    }
+
+    /**
+     * Cria a resposta para uma chave válida sem nenhuma ability exigida.
+     *
+     * @return JsonResponse Resposta JSON com HTTP 403.
+     */
+    private function forbiddenResponse(): JsonResponse
+    {
+        return new JsonResponse(['message' => 'Forbidden.'], Response::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * Cria a resposta para middleware sem abilities válidas configuradas.
+     *
+     * @return JsonResponse Resposta JSON com HTTP 500.
+     */
+    private function invalidAbilitiesResponse(): JsonResponse
+    {
+        return new JsonResponse([
+            'message' => 'O middleware requer pelo menos uma ability válida',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
