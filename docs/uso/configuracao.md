@@ -73,6 +73,12 @@ e `revoked_by` sejam registrados.
 | `API_KEYS_QUERY_PARAMETER_ENABLED` | `false` | Permite token via query string. |
 | `API_KEYS_QUERY_PARAMETER_NAME` | `api_key` | Nome do parâmetro de query string. |
 
+O alias sempre deve ser aplicado com ao menos uma ability. Por exemplo:
+
+```php
+Route::middleware('uspdevApiKeys:tasks.read');
+```
+
 ## Exemplo de `.env`
 
 ```dotenv

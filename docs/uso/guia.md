@@ -104,7 +104,7 @@ O package registra o alias `uspdevApiKeys`, mas a aplicação deve aplicá-lo à
 suas próprias rotas:
 
 ```php
-Route::middleware('uspdevApiKeys')
+Route::middleware('uspdevApiKeys:tasks.read')
     ->get('/api/projects/{project}/tasks', [TaskController::class, 'index']);
 ```
 
@@ -120,15 +120,17 @@ Após a autenticação, a API Key fica disponível em:
 $apiKey = request()->attributes->get('apiKey');
 ```
 
-A aplicação deve verificar a ability necessária:
+A ability `tasks.read` já foi autorizada pelo middleware. Como a rota recebe
+um owner, o controller ainda deve confirmar que a chave pertence ao projeto
+solicitado:
 
 ```php
-abort_unless($apiKey->allows('tasks.read'), 403);
+abort_unless($apiKey->owner?->is($project), 403);
 ```
 
-`ApiKey::allows()` é a API pública de autorização. O método
-`Project::abilities()` apenas declara as permissões de cada papel e não deve
-ser consultado diretamente pelo controller.
+O controller não precisa repetir `ApiKey::allows('tasks.read')`. O método
+`Project::abilities()` declara as permissões de cada papel e é consultado pelo
+middleware por meio de `ApiKey::allows()`.
 
-O middleware autentica a chave, mas não substitui o usuário da sessão e não
-autoriza automaticamente as operações de negócio.
+O middleware autentica e autoriza a chave, mas não substitui o usuário da
+sessão nem verifica se o owner da chave corresponde ao recurso da rota.

@@ -78,27 +78,31 @@ O backend adapta a resposta com base no propósito da chave utilizada:
 ## Middleware
 
 ```php
-Route::middleware('uspdevApiKeys')->group(function () {
+Route::middleware('uspdevApiKeys:tasks.read')->group(function () {
 });
 ```
 
-O middleware autentica a credencial, verifica expiração e revogação, atualiza
-os metadados de uso e injeta a instância de `ApiKey` no request:
+O middleware exige ao menos uma ability, autentica a credencial, verifica
+expiração e revogação, atualiza os metadados de uso, autoriza a operação e
+injeta a instância de `ApiKey` no request:
 
 ```php
 $apiKey = request()->attributes->get('apiKey');
 ```
 
-Ele não recebe abilities como parâmetro e não autoriza operações de negócio.
-A aplicação hospedeira deve consultar a ability necessária depois da
-autenticação:
+Quando mais de uma ability for declarada, elas são alternativas:
 
 ```php
-abort_unless($apiKey->allows('tasks.create'), 403);
+Route::middleware('uspdevApiKeys:users.read.self,users.read.any');
 ```
 
-Assim, uma falha de autenticação retorna HTTP 401, enquanto uma chave válida
-sem a ability exigida normalmente resulta em HTTP 403.
+A chave é autorizada se possuir qualquer uma das abilities. Uma falha de
+autenticação retorna HTTP 401; uma chave válida sem as abilities exigidas
+retorna HTTP 403; middleware sem ability ou com parâmetro vazio retorna HTTP
+500.
+
+Se a rota recebe um recurso vinculado a um owner, a aplicação hospedeira ainda
+deve confirmar que `$apiKey->owner` corresponde ao recurso acessado.
 
 ## 📡 Endpoints de Exemplo
 
@@ -315,19 +319,19 @@ retornar um array vazio.
 
 ## API pública de autorização
 
-Depois que o middleware autenticar a credencial, a aplicação deve usar
-`ApiKey::allows()` como API pública única para verificar uma operação:
+As rotas protegidas declaram as abilities no middleware, que usa
+`ApiKey::allows()` como API pública para verificar cada operação:
 
 ```php
-$apiKey = request()->attributes->get('apiKey');
-
-abort_unless($apiKey->allows('tasks.create'), 403);
+Route::middleware('uspdevApiKeys:tasks.create')
+    ->post('/api/projects/{project}/tasks', [TaskController::class, 'store']);
 ```
 
 `ApiKey::allows()` utiliza o `role` armazenado na chave, solicita ao owner o
 array retornado por `abilities()` e verifica a ability, incluindo o wildcard
 `*`. A aplicação não precisa passar o papel manualmente nem consultar esse
-array diretamente.
+array diretamente. O controller não repete `allows()` para a ability declarada
+na rota, mas pode usá-lo em verificações adicionais ou condicionais.
 
 Não existem APIs alternativas como `allowsApiAbility()` ou `authorize()`. Essa
 separação mantém uma responsabilidade clara para cada método:
@@ -343,22 +347,18 @@ Quando uma requisição autenticada é recebida, o fluxo fica dividido entre o
 package e a aplicação hospedeira:
 
 ```text
-Middleware uspdevApiKeys
+Rota com uspdevApiKeys:tasks.create
     │
     ├── autentica a credencial
     └── injeta ApiKey no request
-            │
-            ▼
-Aplicação hospedeira
-    │
-    └── $apiKey->allows('tasks.create')
             │
             ▼
 API Key
     │
     ├── owner_type
     ├── owner_id
-    └── role
+    ├── role
+    └── allows('tasks.create')
             │
             ▼
 Objeto proprietário (Project, Form, Workflow...)
@@ -371,6 +371,9 @@ Permissões efetivas
             │
             ▼
 Autorização da operação
+            │
+            ▼
+Aplicação hospedeira compara o owner com o recurso da rota
 ```
 
 Por exemplo, suponha uma API Key com:
@@ -379,10 +382,10 @@ Por exemplo, suponha uma API Key com:
 role = collaborator
 ```
 
-Ao tentar criar uma tarefa, a aplicação consulta a própria credencial:
+Ao tentar criar uma tarefa, o middleware consulta a própria credencial:
 
 ```php
-$apiKey->allows('tasks.create');
+Route::middleware('uspdevApiKeys:tasks.create');
 ```
 
 Internamente, a credencial resolve o owner e consulta as abilities do papel
@@ -396,9 +399,9 @@ Internamente, a credencial resolve o owner e consulta as abilities do papel
 ]
 ```
 
-Como `tasks.create` está presente, `allows()` retorna `true`. Se a ability não
-estiver presente, o método retorna `false` e a aplicação decide a resposta
-adequada, normalmente HTTP 403.
+Como `tasks.create` está presente, `allows()` retorna `true` e o middleware
+continua a requisição. Se a ability não estiver presente, o middleware retorna
+HTTP 403.
 
 ## Vantagens
 
@@ -425,15 +428,20 @@ Cada aplicação é livre para mapear esses papéis para as permissões que dese
 ## Exemplo completo
 
 ```php
+Route::post('/api/projects/{project}/tasks', [TaskController::class, 'store'])
+    ->middleware('uspdevApiKeys:tasks.create');
+```
+
+```php
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-public function store(Request $request): JsonResponse
+public function store(Request $request, Project $project): JsonResponse
 {
     $apiKey = $request->attributes->get('apiKey');
 
-    abort_unless($apiKey->allows('tasks.create'), Response::HTTP_FORBIDDEN);
+    abort_unless($apiKey->owner?->is($project), Response::HTTP_FORBIDDEN);
 
     // A criação da tarefa pertence à aplicação hospedeira.
 
@@ -441,9 +449,9 @@ public function store(Request $request): JsonResponse
 }
 ```
 
-Dessa forma, o package fornece o mecanismo genérico de consulta por
-`ApiKey::allows()`, enquanto o owner continua sendo a fonte de verdade das
-abilities e a aplicação hospedeira decide quais operações exigem cada ability.
+Dessa forma, a rota declara a ability, o middleware a verifica por
+`ApiKey::allows()`, o owner continua sendo a fonte de verdade das abilities e a
+aplicação hospedeira impede acesso horizontal ao comparar o owner com o recurso.
 
 # Exemplo de Consumo da API
 
@@ -517,7 +525,14 @@ curl -X POST https://projetos.exemplo.br/api/projects/15/tasks \
 
 ## Permissões
 
-A API Key utilizada deve possuir permissão para criar tarefas. Isso pode ser controlado por meio do papel (`role`) ou de permissões granulares (`scopes`), conforme a política de autorização da aplicação.
+A rota de criação deve usar o middleware com a ability correspondente:
+
+```php
+Route::middleware('uspdevApiKeys:tasks.create');
+```
+
+A API Key utilizada deve possuir essa permissão por meio do papel (`role`),
+conforme o mapa de abilities definido pelo owner.
 
 Exemplo:
 

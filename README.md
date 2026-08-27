@@ -96,6 +96,23 @@ DataTable na própria view:
 As submissões do componente usam diretamente as rotas POST registradas pelo
 package; não recrie as rotas de criação, renovação ou revogação na aplicação.
 
+### Rotas de negócio protegidas
+
+As rotas de negócio pertencem à aplicação hospedeira. Proteja cada uma delas
+declarando ao menos uma ability no middleware:
+
+```php
+Route::middleware('uspdevApiKeys:tasks.read')
+    ->get('/api/projects/{project}/tasks', [TaskController::class, 'index']);
+```
+
+Abilities separadas por vírgula usam lógica OR. O middleware retorna HTTP 401
+para falha de autenticação, HTTP 403 quando a chave válida não possui nenhuma
+ability declarada e HTTP 500 quando a rota não informa uma ability válida.
+
+Em rotas vinculadas a um owner, o controller ainda deve confirmar que
+`$apiKey->owner` corresponde ao recurso acessado.
+
 ## Contribuições
 
 Contribuições são bem-vindas. Para contribuir:

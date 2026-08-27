@@ -46,17 +46,17 @@ class Project extends Model
 }
 ```
 
-A aplicação pode autorizar uma operação com:
+A aplicação declara a ability exigida ao aplicar o middleware:
 
 ```php
-$apiKey = request()->attributes->get('apiKey');
-
-abort_unless($apiKey->allows('tasks.create'), 403);
+Route::middleware('uspdevApiKeys:tasks.create')
+    ->post('/api/projects/{project}/tasks', [TaskController::class, 'store']);
 ```
 
-`ApiKey::allows()` é a API pública recomendada. O método `abilities()` apenas
-define o mapa de permissões do owner para cada papel; a aplicação não precisa
-consultá-lo diretamente nem informar novamente o papel armazenado na chave.
+O middleware usa `ApiKey::allows()` como API pública de autorização. O método
+`abilities()` apenas define o mapa de permissões do owner para cada papel; a
+aplicação não precisa consultá-lo diretamente nem informar novamente o papel
+armazenado na chave.
 
 O wildcard `*` concede todas as abilities. O package não conhece as regras
 de negócio nem consulta diretamente as roles da aplicação ou da Senha Única;
@@ -74,8 +74,12 @@ uspdevApiKeys
 A trait não aplica o middleware automaticamente. A aplicação hospedeira deve
 usá-lo nas rotas de negócio que deseja proteger.
 
-O middleware não aceita abilities como parâmetro. Ele autentica a chave, e a
-aplicação autoriza cada operação separadamente com `ApiKey::allows()`.
+O middleware exige ao menos uma ability após o alias. Quando várias abilities
+forem separadas por vírgula, elas são alternativas e basta a chave possuir uma:
+
+```php
+Route::middleware('uspdevApiKeys:users.read.self,users.read.any');
+```
 
 ## Rotas de negócio da aplicação
 
@@ -85,7 +89,7 @@ As rotas de negócio pertencem à aplicação hospedeira:
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
 
-Route::middleware('uspdevApiKeys')
+Route::middleware('uspdevApiKeys:tasks.read')
     ->prefix('api')
     ->group(function (): void {
         Route::get('projects/{project}/tasks', [TaskController::class, 'index'])
@@ -95,15 +99,21 @@ Route::middleware('uspdevApiKeys')
 
 O middleware:
 
-1. lê `Authorization: Bearer ...`;
-2. valida o formato e localiza a chave pelo prefixo público;
-3. recusa chaves inexistentes, expiradas ou revogadas;
-4. confere o segredo contra `secret_hash`;
-5. atualiza os metadados de uso;
-6. injeta o model no request usando o atributo configurado.
+1. valida se ao menos uma ability não vazia foi declarada;
+2. lê `Authorization: Bearer ...`;
+3. valida o formato e localiza a chave pelo prefixo público;
+4. recusa chaves inexistentes, expiradas ou revogadas;
+5. confere o segredo contra `secret_hash`;
+6. atualiza os metadados de uso;
+7. injeta o model no request usando o atributo configurado;
+8. autoriza quando a chave possui qualquer ability declarada.
 
-Falhas de autenticação retornam HTTP 401. A ausência de uma ability deve ser
-tratada pela aplicação e normalmente retorna HTTP 403.
+Falhas de autenticação retornam HTTP 401. Uma chave válida sem as abilities
+exigidas retorna HTTP 403. Middleware sem ability ou com parâmetro vazio
+retorna HTTP 500.
+
+Quando a rota recebe um recurso vinculado a um owner, o controller ainda deve
+compará-lo com `$apiKey->owner` para evitar acesso horizontal entre owners.
 
 ## Rotas de ação do componente
 

@@ -50,9 +50,10 @@ e suas abilities. Um papel desconhecido deve retornar uma lista vazia.
 | `allows(string $ability)` | Ability a consultar. | `bool` | Consulta `owner->abilities($role)` e aceita a ability exata ou `*`. |
 | `ApiKey::authenticate(string $token)` | Token completo da credencial. | `?ApiKey` | Autentica pelo serviço registrado; retorna `null` quando inválido. |
 
-`allows()` é a API pública para consultar a autorização de uma chave. A
-aplicação não deve consultar `abilities()` diretamente ao processar uma
-requisição.
+`allows()` é a API pública usada pelo middleware para consultar a autorização
+de uma chave. A aplicação não deve consultar `abilities()` diretamente. Ela
+pode chamar `allows()` quando precisar de uma decisão adicional que não seja a
+ability obrigatória já declarada na rota.
 
 ## Serviço `ApiKeyManager`
 
@@ -109,31 +110,37 @@ valores da chave anterior.
 O token é sensível: não o persista, registre em logs, exponha em eventos ou
 inclua em respostas posteriores. O banco armazena apenas `secret_hash`.
 
-## Middleware de autenticação atual
+## Middleware de autenticação e autorização
 
 O alias configurado em `api-keys.middleware.alias` é `uspdevApiKeys` por
-padrão. Na versão atual, ele apenas autentica a credencial:
+padrão. Toda rota protegida deve declarar ao menos uma ability:
 
 ```php
-Route::middleware('uspdevApiKeys')->get('/integrations/users', UserController::class);
+Route::middleware('uspdevApiKeys:users.read.self,users.read.any')
+    ->get('/integrations/users', UserController::class);
 ```
 
-O middleware aceita `Authorization: Bearer <token>` e, somente quando
-habilitado em configuração, o token pela query string. Ele retorna HTTP 401
-para credencial ausente ou inválida e disponibiliza a `ApiKey` no atributo de
-request configurado por `api-keys.middleware.request_attribute` (`apiKey` por
-padrão).
+As abilities separadas por vírgula são alternativas: a chave é autorizada
+quando possuir qualquer uma delas. O middleware aceita `Authorization: Bearer
+<token>` e, somente quando habilitado em configuração, o token pela query
+string. Ele atualiza os metadados de uso e disponibiliza a `ApiKey` no atributo
+configurado por `api-keys.middleware.request_attribute` (`apiKey` por padrão).
 
-A etapa 3 do [plano de ajustes](../plano-ajustes-contrato-middleware.md)
-alterará este contrato para exigir abilities diretamente na rota. Até que ela
-seja implementada, a aplicação deve consultar `ApiKey::allows()` após a
-autenticação.
+Os resultados do middleware são:
+
+- HTTP 401 para credencial ausente, malformada, inválida, expirada ou revogada;
+- HTTP 403 para chave válida sem nenhuma das abilities declaradas;
+- HTTP 500 quando nenhuma ability for informada ou houver parâmetro vazio.
+
+O controller não precisa repetir `allows()` para uma ability já exigida pelo
+middleware.
 
 ## Responsabilidades da aplicação
 
 - Registrar cada classe de owner em `api-keys.owners`.
 - Definir `purpose`, papéis e abilities do domínio.
-- Aplicar o middleware apenas às rotas de negócio que aceitam API Key.
+- Aplicar o middleware com ao menos uma ability às rotas de negócio que
+  aceitam API Key.
 - Comparar a chave com o owner solicitado pela rota quando houver recurso
   vinculado a um owner, evitando acesso horizontal entre owners distintos.
 - Definir autorização do usuário autenticado para gerenciar as chaves na

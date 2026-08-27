@@ -232,12 +232,9 @@ pedido do usuário e das operações existentes. Um papel desconhecido deve
 sempre retornar `[]`. Use o wildcard `*` apenas quando acesso total tiver sido
 realmente solicitado.
 
-Não consulte `abilities()` diretamente no controller. A API pública de
-autorização é:
-
-```php
-$apiKey->allows('tasks.read');
-```
+Não consulte `abilities()` diretamente no controller. O middleware usa
+`ApiKey::allows()` como API pública de autorização e recebe a ability exigida
+na declaração da rota.
 
 Se o projeto usa morph map, preserve sua configuração. A migration atual usa
 `morphs('owner')`, com `owner_id` numérico. Antes de migrar, confirme que a
@@ -301,10 +298,10 @@ model de usuário sem que isso tenha sido solicitado e projetado.
 ### 5. Rotas de negócio autenticadas por API Key
 
 As rotas de negócio pertencem à aplicação. Aplique o middleware do package às
-rotas solicitadas:
+rotas solicitadas e declare ao menos uma ability:
 
 ```php
-Route::middleware('uspdevApiKeys')
+Route::middleware('uspdevApiKeys:tasks.read')
     ->prefix('api')
     ->group(function (): void {
         Route::get(
@@ -314,9 +311,10 @@ Route::middleware('uspdevApiKeys')
     });
 ```
 
-O middleware autentica a chave, mas não decide se ela pode executar a operação.
-Depois da autenticação, a instância de `ApiKey` fica no atributo configurado do
-request, cujo nome padrão é `apiKey`:
+O middleware autentica a chave e autoriza a operação por meio das abilities
+declaradas. Quando houver mais de uma ability separada por vírgula, basta a
+chave possuir uma delas. Depois da autenticação, a instância de `ApiKey` fica no
+atributo configurado do request, cujo nome padrão é `apiKey`:
 
 ```php
 /** @var \Uspdev\ApiKeys\Models\ApiKey $apiKey */
@@ -325,11 +323,11 @@ $apiKey = $request->attributes->get(
 );
 ```
 
-Em cada endpoint relacionado a um owner, faça obrigatoriamente duas
-verificações:
+Em cada endpoint relacionado a um owner, implemente obrigatoriamente os dois
+controles abaixo:
 
-1. a chave pertence ao mesmo owner acessado na rota;
-2. a chave possui a ability necessária.
+1. declare no middleware a ability necessária;
+2. confirme no controller que a chave pertence ao mesmo owner acessado na rota.
 
 Exemplo:
 
@@ -342,7 +340,6 @@ public function index(Request $request, Project $project): JsonResponse
     );
 
     abort_unless($apiKey->owner?->is($project), 403);
-    abort_unless($apiKey->allows('tasks.read'), 403);
 
     return response()->json(
         $project->tasks()->get()
@@ -353,9 +350,10 @@ public function index(Request $request, Project $project): JsonResponse
 Adapte o controller, a consulta e a resposta ao pedido do usuário. O exemplo de
 tarefas não deve ser copiado se outro domínio foi solicitado.
 
-Não basta verificar somente `$apiKey->allows()`. Uma chave pertencente ao owner
-A poderia ter a mesma ability existente no owner B. Sem comparar o owner, isso
-pode permitir acesso horizontal indevido.
+O middleware já verifica `tasks.read`, portanto o controller não deve repetir
+`$apiKey->allows('tasks.read')`. A comparação do owner continua obrigatória:
+uma chave pertencente ao owner A poderia ter a mesma ability existente no owner
+B e, sem essa comparação, acessar horizontalmente o recurso indevido.
 
 Quando o endpoint não recebe o owner pela rota, obtenha o recurso a partir de
 `$apiKey->owner` e confirme que o tipo de model é o esperado antes de executar
@@ -364,7 +362,8 @@ a regra de negócio.
 O resultado esperado para falhas é:
 
 - HTTP 401: token ausente, malformado, inválido, expirado ou revogado;
-- HTTP 403: token válido, mas owner incorreto ou ability insuficiente.
+- HTTP 403: token válido, mas owner incorreto ou ability insuficiente;
+- HTTP 500: middleware sem ability ou com parâmetro vazio.
 
 ### 6. Implementação de `purpose`
 
@@ -387,8 +386,8 @@ O importante é não presumir que o package já produz respostas, resumos ou
 contextos. Services, Resources, validações, cache e invalidação pertencem ao
 projeto hospedeiro.
 
-`purpose` também não concede permissão. Mesmo quando seu valor for `ai`, a
-ability exigida pela operação deve continuar sendo verificada.
+`purpose` também não concede permissão. Mesmo quando seu valor for `ai`, a rota
+deve declarar no middleware a ability exigida pela operação.
 
 ### 7. Criação programática, quando necessária
 
@@ -458,8 +457,8 @@ Ao terminar, verifique os itens aplicáveis ao pedido:
 - policy ou Gate protege o gerenciamento por owner;
 - página ou componente aparece no local solicitado;
 - token completo é exibido somente após criação ou renovação;
-- rota de negócio usa o middleware de API Key;
-- controller compara o owner e verifica a ability;
+- rota de negócio usa o middleware de API Key com ao menos uma ability;
+- controller compara o owner com o recurso da rota;
 - token inválido retorna 401;
 - owner incorreto e ability ausente retornam 403;
 - chave expirada ou revogada não autentica;
